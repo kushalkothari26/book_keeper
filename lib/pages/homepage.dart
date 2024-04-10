@@ -31,50 +31,75 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
   }
 
   void openNoteBox({String? docID}) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: Column(
-          children: [
-            MyTextField(hintText: 'Enter Name', obscureText: false, controller: textController),
-            RadioListTile(
-              title: const Text('Customer'),
-              value: 1,
-              groupValue: _selectedValue,
-              onChanged: (value) {
-                setState(() {
-                  _selectedValue = value as int;
-                });
+    if(docID==null){
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('New Business Contact'),
+          content: Column(
+            children: [
+              MyTextField(hintText: 'Enter Name', obscureText: false, controller: textController),
+              RadioListTile(
+                title: const Text('Customer'),
+                value: 1,
+                groupValue: _selectedValue,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedValue = value as int;
+                  });
+                },
+              ),
+              RadioListTile(
+                title: const Text('Supplier'),
+                value: 2,
+                groupValue: _selectedValue,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedValue = value as int;
+                  });
+                },
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                if (docID == null) {
+                  firestoreService.addNote(textController.text, _selectedValue);
+                }
+                textController.clear();
+                Navigator.pop(context);
               },
-            ),
-            RadioListTile(
-              title: const Text('Supplier'),
-              value: 2,
-              groupValue: _selectedValue,
-              onChanged: (value) {
-                setState(() {
-                  _selectedValue = value as int;
-                });
-              },
+              child: const Text("Add"),
             ),
           ],
         ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              if (docID == null) {
-                firestoreService.addNote(textController.text, _selectedValue);
-              } else {
-                firestoreService.updateNote(docID, textController.text);
-              }
-              textController.clear();
-              Navigator.pop(context);
-            },
-            child: const Text("Add"),
+      );
+    }
+    else{
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Edit Name'),
+          content: Column(
+            children: [
+              MyTextField(hintText: 'Enter Name', obscureText: false, controller: textController),
+            ],
           ),
-        ],
-      ),
-    );
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                firestoreService.updateNote(docID, textController.text);
+                textController.clear();
+                Navigator.pop(context);
+              },
+              child: const Text("Edit"),
+            ),
+          ],
+        ),
+      );
+    }
+
   }
 
   @override
