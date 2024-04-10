@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "735362682890",
+    "project_id": "fir-53adb",
+    "storage_bucket": "fir-53adb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:735362682890:android:12fddcd3d7b41e348b8ff3",
+        "android_client_info": {
+          "package_name": "com.example.book_keeper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "735362682890-2pjv3fr093q5oiq8mg353g4oektv5leu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmlVubfxR9Fzd2iEwcSleml398eRidZN8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "735362682890-2pjv3fr093q5oiq8mg353g4oektv5leu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "735362682890-k2b0b8kvmd11nom7nqqen02kalfoic3j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.logreg"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:735362682890:android:a62fa4052d33a1948b8ff3",
+        "android_client_info": {
+          "package_name": "com.example.logreg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "735362682890-m5klaaq85hn5p4c48ddshlp771l2a5kt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.logreg",
+            "certificate_hash": "343cd43248fb8dd09f7e3eb14eddcf418ec0aaff"
+          }
+        },
+        {
+          "client_id": "735362682890-2pjv3fr093q5oiq8mg353g4oektv5leu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmlVubfxR9Fzd2iEwcSleml398eRidZN8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "735362682890-2pjv3fr093q5oiq8mg353g4oektv5leu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "735362682890-k2b0b8kvmd11nom7nqqen02kalfoic3j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.logreg"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
