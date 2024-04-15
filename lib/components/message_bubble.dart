@@ -71,24 +71,53 @@ class MessageBubble extends StatelessWidget {
   void _showOptionsDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select an option'),
-        content: SingleChildScrollView(
-          child: ListBody(
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.background,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               GestureDetector(
                 onTap: () {
                   _showAmountDialog(context);
                 },
-                child: const Text('Update'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.edit, color: Colors.blue),
+                      // SizedBox(width: 10),
+                      Text('Update', style: TextStyle(color: Colors.blue)),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
               GestureDetector(
                 onTap: () {
                   MessageService().deleteMessage(docID, messageID);
                   Navigator.pop(context);
                 },
-                child: const Text('Delete'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.delete, color: Colors.red),
+                      // SizedBox(width: 5),
+                      Text('Delete', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -121,4 +150,6 @@ class MessageBubble extends StatelessWidget {
       ),
     );
   }
+
+
 }

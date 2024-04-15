@@ -22,65 +22,86 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        backgroundColor: Colors.blue, // Change the app bar color
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder(
-              stream: messageService.getMessagesStream(widget.docID),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade100, Colors.blue.shade50], // Add a gradient background
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder(
+                stream: messageService.getMessagesStream(widget.docID),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
 
-                List<Map<String, dynamic>> messages = [];
-                snapshot.data!.docs.forEach((document) {
-                  messages.add({
-                    'messageID': document.id,
-                    'message': document['message'],
-                    'comment':document['comment'],
-                    'isRight': document['isRight'],
-                    'timestamp': document['timestamp'],
+                  List<Map<String, dynamic>> messages = [];
+                  snapshot.data!.docs.forEach((document) {
+                    messages.add({
+                      'messageID': document.id,
+                      'message': document['message'],
+                      'comment': document['comment'],
+                      'isRight': document['isRight'],
+                      'timestamp': document['timestamp'],
+                    });
                   });
-                });
 
-                return ListView.builder(
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    return MessageBubble(
-                      docID: widget.docID,
-                      messageID: messages[index]['messageID'],
-                      message: messages[index]['message'],
-                      comment: messages[index]['comment'],
-                      isRight: messages[index]['isRight'],
-                      timestamp: messages[index]['timestamp'].toDate(),
-                    );
-                  },
-                );
-              },
+                  return ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      return MessageBubble(
+                        docID: widget.docID,
+                        messageID: messages[index]['messageID'],
+                        message: messages[index]['message'],
+                        comment: messages[index]['comment'],
+                        isRight: messages[index]['isRight'],
+                        timestamp: messages[index]['timestamp'].toDate(),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _showAmountDialog(true),
-                  child: const Text('You Gave'),
-                ),
+            Container(
+              color: Colors.white, // Add a white background for the input area
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _showAmountDialog(true),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                      ),
+                      child: const Text('You Gave',style: TextStyle(color: Colors.white),),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _showAmountDialog(false),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                      ),
+                      child: const Text('You Received',style: TextStyle(color: Colors.white),),
+                    ),
+                  ),
+                ],
               ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _showAmountDialog(false),
-                  child: const Text('You Received'),
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -91,6 +112,8 @@ class _ChatPageState extends State<ChatPage> {
       builder: (context) => AlertDialog(
         title: Text(isRight ? 'Enter Amount You Gave' : 'Enter Amount You Received'),
         content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _amountController,
@@ -106,7 +129,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: <Widget>[
           ElevatedButton(
             onPressed: () {
-              messageService.addMessage(widget.docID, _amountController.text,commentController.text,isRight);
+              messageService.addMessage(widget.docID, _amountController.text, commentController.text, isRight);
               _amountController.clear();
               commentController.clear();
               Navigator.of(context).pop();

@@ -31,7 +31,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
   }
 
   void openNoteBox({String? docID}) {
-    if(docID==null){
+    if (docID == null) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -75,8 +75,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
           ],
         ),
       );
-    }
-    else{
+    } else {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -99,7 +98,6 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
         ),
       );
     }
-
   }
 
   @override
@@ -107,18 +105,23 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Ledger"),
+        backgroundColor: Theme.of(context).colorScheme.primary, // Use primary color from theme
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
             Tab(text: 'Customers'),
             Tab(text: 'Suppliers'),
           ],
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white,
         ),
       ),
       drawer: MyDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: openNoteBox,
-        child: const Icon(Icons.add),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: const Icon(Icons.add), // Use primary color from theme
       ),
       body: TabBarView(
         controller: _tabController,
@@ -161,27 +164,16 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                           noteText,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        onTap: (){
+                        onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatPage(docID: docID,title: noteText,),
+                              builder: (context) => ChatPage(docID: docID, title: noteText),
                             ),
                           );
                         },
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: () => openNoteBox(docID: docID),
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                            ),
-                            IconButton(
-                              onPressed: () => firestoreService.deleteNote(docID),
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                            ),
-                          ],
-                        ),
+                        onLongPress: () => _showOptionsDialog(context,docID),
+
                       ),
                     ),
                   );
@@ -228,27 +220,15 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                           noteText,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        onTap: (){
+                        onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatPage(docID: docID,title: noteText,),
+                              builder: (context) => ChatPage(docID: docID, title: noteText),
                             ),
                           );
                         },
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: () => openNoteBox(docID: docID),
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                            ),
-                            IconButton(
-                              onPressed: () => firestoreService.deleteNote(docID),
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                            ),
-                          ],
-                        ),
+                        onLongPress: () => _showOptionsDialog(context,docID),
                       ),
                     ),
                   );
@@ -260,4 +240,64 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
       ),
     );
   }
+  void _showOptionsDialog(BuildContext context, String docID) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.background,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  openNoteBox(docID: docID);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.edit, color: Colors.blue),
+                      // SizedBox(width: 10),
+                      Text('Update', style: TextStyle(color: Colors.blue)),
+                    ],
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  firestoreService.deleteNote(docID);
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.delete, color: Colors.red),
+                      // SizedBox(width: 5),
+                      Text('Delete', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
 }
