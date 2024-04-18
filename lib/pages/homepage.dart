@@ -152,7 +152,9 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
 
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                   String noteText = data['name'];
-
+                  int balance=data['balance'];
+                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe: $balance' : 'Owes you: ${balance.abs()}';
+                  Color balanceColor = balance==0 ?Colors.black : balance > 0 ? Colors.green : Colors.red;
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10.0,
@@ -168,6 +170,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                           noteText,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        trailing: Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -208,7 +211,9 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
 
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                   String noteText = data['name'];
-
+                  int balance=data['balance'];
+                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe: $balance' : 'Owes you: ${balance.abs()}';
+                  Color balanceColor = balance==0 ?Colors.black : balance > 0 ? Colors.green : Colors.red;
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10.0,
@@ -224,6 +229,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                           noteText,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        trailing: Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
                         onTap: () {
                           Navigator.push(
                             context,

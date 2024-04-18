@@ -1,3 +1,4 @@
+import 'package:book_keeper/services/whatsapp_service.dart';
 import 'package:flutter/material.dart';
 import 'package:book_keeper/components/message_bubble.dart';
 import 'package:book_keeper/services/message_service.dart';
@@ -39,11 +40,11 @@ class _ChatPageState extends State<ChatPage> {
     try {
       int fetchedtotalgiven = await firestoreService.gettotalGiven(widget.docID);
       int fetchedtotalreceived=await firestoreService.gettotalReceived(widget.docID);
-      int Balance=await firestoreService.getBalance(widget.docID);
+      int fetchedBalance=await firestoreService.getBalance(widget.docID);
       setState(() {
         totalGiven = fetchedtotalgiven;
         totalReceived=fetchedtotalreceived;
-        balance=Balance;
+        balance=fetchedBalance;
       });
     } catch (e) {
       print('Failed to load balance: $e');
@@ -114,26 +115,83 @@ class _ChatPageState extends State<ChatPage> {
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(10),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _showAmountDialog(true),
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _showAmountDialog(true),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                          ),
+                          child: const Text('You Gave', style: TextStyle(color: Colors.white)),
+                        ),
                       ),
-                      child: const Text('You Gave', style: TextStyle(color: Colors.white)),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _showAmountDialog(false),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                          ),
+                          child: const Text('You Received', style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _showAmountDialog(false),
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      ),
-                      child: const Text('You Received', style: TextStyle(color: Colors.white)),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (balance<0) {
+                        String phoneNumber = await firestoreService.getPhoneNumber(widget.docID);
+                        if ({phoneNumber}.isNotEmpty && phoneNumber!="" && (phoneNumber.length==12 || phoneNumber.length==10)) {
+                          String reminderMessage =
+                              "Hi there, just a friendly reminder that you owe us ₹$balance. Please let us know if you need any assistance. Thank you!";
+                          String link = ""; // Add the link here if needed
+                          await share(reminderMessage, link, phoneNumber);
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Phone Number Error!!!'),
+                              content: const Text('Please update the phone number in your details. Make sure the number starts with 91'),
+
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _showUpdatePhoneNumberDialog();
+                                  },
+                                  child: const Text('Update'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('No Reminder Needed'),
+                            content: const Text('The total given is not greater than the total received.'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
                     ),
+                    child: const Text('Send Reminder', style: TextStyle(color: Colors.blue)),
                   ),
                 ],
               ),
@@ -199,4 +257,37 @@ class _ChatPageState extends State<ChatPage> {
       totalGiven=totalGiven;
     });
   }
+
+
+  void _showUpdatePhoneNumberDialog() {
+    String newPhoneNumber = '';
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Update Phone Number'),
+        content: TextField(
+          onChanged: (value) => newPhoneNumber = value,
+          decoration: const InputDecoration(
+            hintText: 'Enter new phone number with 91 in front',
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async {
+              // Update the phone number in the database
+              await firestoreService.updatePhoneNumber(widget.docID, newPhoneNumber);
+              Navigator.pop(context);
+            },
+            child: const Text('Update'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+

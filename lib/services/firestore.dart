@@ -5,6 +5,8 @@ class FirestoreService {
   final CollectionReference names = FirebaseFirestore.instance.collection('names');
   final user = FirebaseAuth.instance.currentUser;
 
+
+  // operations for Customers and Suppliers
   Future<void> addNote(String name, int type, String phoneNumber) {
     if (user != null) {
       return names.add({
@@ -42,6 +44,8 @@ class FirestoreService {
   Future<void> deleteNote(String docID) {
     return names.doc(docID).delete();
   }
+
+  // operations for given, received and balance
   Future<int> gettotalGiven(String docID) async {
     DocumentSnapshot snapshot = await names.doc(docID).get();
     return snapshot['totalGiven'] ?? 0;
@@ -50,7 +54,6 @@ class FirestoreService {
     DocumentSnapshot snapshot = await names.doc(docID).get();
     return snapshot['totalReceived'] ?? 0;
   }
-
   Future<int> getBalance(String docID) async {
     DocumentSnapshot snapshot = await names.doc(docID).get();
     return snapshot['balance'] ?? 0;
@@ -63,6 +66,16 @@ class FirestoreService {
   }
   Future<void> updateBalance(String docID, int newBalance) {
     return names.doc(docID).update({'balance': newBalance});
+  }
+
+
+  // operations for phone Number
+  Future<void> updatePhoneNumber(String docID, String ph) {
+    return names.doc(docID).update({'phoneNumber': ph});
+  }
+  Future<String> getPhoneNumber(String docID) async {
+    DocumentSnapshot snapshot = await names.doc(docID).get();
+    return snapshot['phoneNumber'] ?? 0;
   }
 }
 
