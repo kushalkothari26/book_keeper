@@ -24,7 +24,7 @@ class MyDrawer extends StatelessWidget {
                 child: GestureDetector(
                     onTap: (){
                       Navigator.pop(context);
-                      Navigator.push(context,MaterialPageRoute(builder: (context)=>const AccountPage()));},
+                      Navigator.push(context,MaterialPageRoute(builder: (context)=>const AccountDetailsPage()));},
                     child: Icon(Icons.account_circle,color: Theme.of(context).colorScheme.primary,size: 90,)),
               )),
               Padding(

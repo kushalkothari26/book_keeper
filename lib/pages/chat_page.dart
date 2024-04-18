@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:book_keeper/components/message_bubble.dart';
 import 'package:book_keeper/services/message_service.dart';
+import 'package:book_keeper/services/firestore.dart';
+
 
 class ChatPage extends StatefulWidget {
   final String docID;
@@ -16,18 +18,51 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController commentController = TextEditingController();
   final MessageService messageService = MessageService();
+  final FirestoreService firestoreService=FirestoreService();
+  int totalGiven = 0;
+  int totalReceived = 0;
+  int balance = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBalance();
+  }
+  void update(int newBalance,int newtotalgiven,int newtotalreceived) {
+    setState(() {
+      balance = newBalance;
+      totalGiven=newtotalgiven;
+      totalReceived=newtotalreceived;
+    });
+  }
+  Future<void> _loadBalance() async {
+    try {
+      int fetchedtotalgiven = await firestoreService.gettotalGiven(widget.docID);
+      int fetchedtotalreceived=await firestoreService.gettotalReceived(widget.docID);
+      int Balance=await firestoreService.getBalance(widget.docID);
+      setState(() {
+        totalGiven = fetchedtotalgiven;
+        totalReceived=fetchedtotalreceived;
+        balance=Balance;
+      });
+    } catch (e) {
+      print('Failed to load balance: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    String balanceText = balance >= 0 ? 'You Owe: $balance' : 'Owes you: ${balance.abs()}';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: Colors.blue, // Change the app bar color
+        title: Text('${widget.title} | $balanceText'),
+        backgroundColor: Colors.blue,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue.shade100, Colors.blue.shade50], // Add a gradient background
+            colors: [Colors.blue.shade100, Colors.blue.shade50],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -38,6 +73,7 @@ class _ChatPageState extends State<ChatPage> {
               child: StreamBuilder(
                 stream: messageService.getMessagesStream(widget.docID),
                 builder: (context, snapshot) {
+
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -67,14 +103,16 @@ class _ChatPageState extends State<ChatPage> {
                         comment: messages[index]['comment'],
                         isRight: messages[index]['isRight'],
                         timestamp: messages[index]['timestamp'].toDate(),
+                        update: _loadBalance,
                       );
+
                     },
                   );
                 },
               ),
             ),
             Container(
-              color: Colors.white, // Add a white background for the input area
+              color: Colors.white,
               padding: const EdgeInsets.all(10),
               child: Row(
                 children: [
@@ -84,7 +122,7 @@ class _ChatPageState extends State<ChatPage> {
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
                       ),
-                      child: const Text('You Gave',style: TextStyle(color: Colors.white),),
+                      child: const Text('You Gave', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -94,7 +132,7 @@ class _ChatPageState extends State<ChatPage> {
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
                       ),
-                      child: const Text('You Received',style: TextStyle(color: Colors.white),),
+                      child: const Text('You Received', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -129,7 +167,17 @@ class _ChatPageState extends State<ChatPage> {
         actions: <Widget>[
           ElevatedButton(
             onPressed: () {
-              messageService.addMessage(widget.docID, _amountController.text, commentController.text, isRight);
+              int amount = int.tryParse(_amountController.text) ?? 0;
+              if (isRight) {
+                totalGiven += amount;
+                balance = totalReceived - totalGiven;
+                _updateBalance();
+              } else {
+                totalReceived += amount;
+                balance = totalReceived - totalGiven;
+                _updateBalance();
+              }
+              messageService.addMessage(widget.docID, amount.toString(), commentController.text, isRight);
               _amountController.clear();
               commentController.clear();
               Navigator.of(context).pop();
@@ -139,5 +187,16 @@ class _ChatPageState extends State<ChatPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _updateBalance() async {
+    await firestoreService.updatetotalReceived(widget.docID, totalReceived);
+    await firestoreService.updatetotalGiven(widget.docID, totalGiven);
+    await firestoreService.updateBalance(widget.docID, balance);
+    setState(() {
+      balance=balance;
+      totalReceived=totalReceived;
+      totalGiven=totalGiven;
+    });
   }
 }

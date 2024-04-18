@@ -15,6 +15,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin {
   final FirestoreService firestoreService = FirestoreService();
   final TextEditingController textController = TextEditingController();
+  final TextEditingController numberController = TextEditingController();
   int _selectedValue = 1;
   late TabController _tabController;
 
@@ -39,6 +40,8 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
           content: Column(
             children: [
               MyTextField(hintText: 'Enter Name', obscureText: false, controller: textController),
+              const SizedBox(height: 10,),
+              MyTextField(hintText: 'Enter Phone Number', obscureText: false, controller: numberController),
               RadioListTile(
                 title: const Text('Customer'),
                 value: 1,
@@ -65,9 +68,10 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
             ElevatedButton(
               onPressed: () {
                 if (docID == null) {
-                  firestoreService.addNote(textController.text, _selectedValue);
+                  firestoreService.addNote(textController.text, _selectedValue, numberController.text);
                 }
                 textController.clear();
+                numberController.clear();
                 Navigator.pop(context);
               },
               child: const Text("Add"),
@@ -298,6 +302,4 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
       ),
     );
   }
-
-
 }

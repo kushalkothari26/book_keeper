@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:book_keeper/services/message_service.dart';
+import 'package:book_keeper/services/firestore.dart';
 
 class MessageBubble extends StatelessWidget {
   final String message;
@@ -9,6 +10,7 @@ class MessageBubble extends StatelessWidget {
   final DateTime timestamp;
   final String docID;
   final String messageID;
+  final Function() update;
 
   MessageBubble({
     super.key,
@@ -18,9 +20,11 @@ class MessageBubble extends StatelessWidget {
     required this.docID,
     required this.messageID,
     required this.comment,
+    required this.update
   });
 
   final TextEditingController _amountController = TextEditingController();
+  final FirestoreService firestoreService= FirestoreService();
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +107,25 @@ class MessageBubble extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () {
+                onTap: () async{
+                  int amount = int.tryParse(message) ?? 0;
+                  int totalGiven = await firestoreService.gettotalGiven(docID);
+                  int totalReceived=await firestoreService.gettotalReceived(docID);
+                  if (isRight) {
+                    totalGiven=totalGiven-amount;
+                    int balance=totalReceived - totalGiven;
+                    await firestoreService.updatetotalGiven(docID, totalGiven);
+                    await firestoreService.updateBalance(docID, balance);
+                    update();
+
+                  } else {
+                    totalReceived=totalReceived-amount;
+                    int balance=totalReceived - totalGiven;
+                    await firestoreService.updatetotalReceived(docID, totalReceived);
+                    await firestoreService.updateBalance(docID, balance);
+                    update();
+                  }
+
                   MessageService().deleteMessage(docID, messageID);
                   Navigator.pop(context);
                 },
@@ -138,10 +160,31 @@ class MessageBubble extends StatelessWidget {
         ),
         actions: <Widget>[
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async{
+              int totalGiven = await firestoreService.gettotalGiven(docID);
+              int totalReceived=await firestoreService.gettotalReceived(docID);
+              int newAmount = int.tryParse(_amountController.text) ?? 0;
+              int oldAmount = int.tryParse(message) ?? 0;
+              int diff = newAmount - oldAmount;
+              int balance=0;
+              if (isRight) {
+                totalGiven=totalGiven+diff;
+                balance=totalReceived - totalGiven;
+                await firestoreService.updatetotalGiven(docID, totalGiven);
+                await firestoreService.updateBalance(docID, balance);
+                update();
+
+              } else {
+                totalReceived=totalReceived+diff;
+                balance=totalReceived - totalGiven;
+                await firestoreService.updatetotalReceived(docID, totalReceived);
+                await firestoreService.updateBalance(docID, balance);
+                update();
+              }
               MessageService()
                   .updateMessage(docID, messageID, _amountController.text);
               _amountController.clear();
+
               Navigator.of(context).pop();
             },
             child: const Text('Submit'),
