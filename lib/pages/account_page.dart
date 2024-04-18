@@ -1,9 +1,10 @@
+import 'package:book_keeper/services/whatsapp_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:book_keeper/services/details_service.dart';
 
 class AccountDetailsPage extends StatefulWidget {
-  const AccountDetailsPage({super.key});
+  const AccountDetailsPage({Key? key});
 
   @override
   _AccountDetailsPageState createState() => _AccountDetailsPageState();
@@ -18,6 +19,20 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
   final firestoreService = DetailsService();
   final user = FirebaseAuth.instance.currentUser;
 
+  void shareBusinessCard(String name, String phone, String businessName, String address) {
+    String vCard = createVCard(name, phone, businessName, address);
+    share(vCard,"",'1234567890');
+  }
+
+  String createVCard(String name, String phone, String businessName, String address) {
+    return '''
+Name:$name
+Phone No.:$phone
+Business Name:$businessName
+Address:$address
+''';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,6 +42,17 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: _saveDetails,
+          ),
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              shareBusinessCard(
+                _nameController.text,
+                _phoneNumberController.text,
+                _businessNameController.text,
+                _addressController.text,
+              );
+            },
           ),
         ],
       ),
