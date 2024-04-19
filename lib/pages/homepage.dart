@@ -31,7 +31,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  void openNoteBox({String? docID}) {
+  void newNameBox({String? docID}) {
     if (docID == null) {
       showDialog(
         context: context,
@@ -50,6 +50,8 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                   setState(() {
                     _selectedValue = value as int;
                   });
+                  Navigator.pop(context);
+                  newNameBox(docID: docID);
                 },
               ),
               RadioListTile(
@@ -60,6 +62,8 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                   setState(() {
                     _selectedValue = value as int;
                   });
+                  Navigator.pop(context);
+                  newNameBox(docID: docID);
                 },
               ),
             ],
@@ -123,7 +127,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
       ),
       drawer: MyDrawer(),
       floatingActionButton: FloatingActionButton(
-        onPressed: openNoteBox,
+        onPressed: newNameBox,
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.add),
       ),
@@ -278,7 +282,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
               GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
-                  openNoteBox(docID: docID);
+                  newNameBox(docID: docID);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
