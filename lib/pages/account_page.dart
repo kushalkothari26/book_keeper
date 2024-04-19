@@ -37,7 +37,7 @@ Address:$address
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account Details'),
+        title: const Text('Account Details',),backgroundColor: Colors.transparent,foregroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -61,23 +61,23 @@ Address:$address
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Name'),
+            Text('Name',style: TextStyle(color: Theme.of(context).colorScheme.primary),),
             TextFormField(
               controller: _nameController,
             ),
             const SizedBox(height: 16.0),
-            const Text('Phone Number'),
+            Text('Phone Number',style: TextStyle(color: Theme.of(context).colorScheme.primary),),
             TextFormField(
               controller: _phoneNumberController,
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 16.0),
-            const Text('Business Name'),
+            Text('Business Name',style: TextStyle(color: Theme.of(context).colorScheme.primary),),
             TextFormField(
               controller: _businessNameController,
             ),
             const SizedBox(height: 16.0),
-            const Text('Address'),
+            Text('Business Address',style: TextStyle(color: Theme.of(context).colorScheme.primary),),
             TextFormField(
               controller: _addressController,
             ),
@@ -103,7 +103,7 @@ Address:$address
         _addressController.text = details['address'];
       });
     } catch (e) {
-      print('Failed to load details: $e');
+      SnackBar(content: Text('Failed to load details: $e'));
     }
   }
 

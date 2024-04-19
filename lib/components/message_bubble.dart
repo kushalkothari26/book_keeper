@@ -34,40 +34,52 @@ class MessageBubble extends StatelessWidget {
       children: [
         GestureDetector(
           onLongPress: () => _showOptionsDialog(context),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isRight ? Colors.red : Colors.green,
+          child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
+              side: BorderSide(
+                color: isRight ? Colors.red : Colors.green,
+                width: 2,
+              ),
             ),
-            padding: const EdgeInsets.all(8),
+            color: Colors.white,
             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      Text(
-                        "₹$message",
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                      Text(
-                        comment,
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 12),
-                      )
-                    ],
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "₹$message",
+                    style: TextStyle(
+                      color: isRight ? Colors.red : Colors.green,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  DateFormat('dd MMM yyyy HH:mm').format(timestamp),
-                  style: const TextStyle(color: Colors.white, fontSize: 10),
-                ),
-              ],
+                  SizedBox(height: 4),
+                  Text(
+                    comment,
+                    style: TextStyle(
+                      color: isRight ? Colors.red : Colors.green,
+                      fontSize: 12,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    DateFormat('dd MMM yyyy HH:mm').format(timestamp),
+                    style: TextStyle(
+                      color: isRight ? Colors.red : Colors.green,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+
       ],
     );
   }
@@ -109,23 +121,22 @@ class MessageBubble extends StatelessWidget {
               GestureDetector(
                 onTap: () async{
                   int amount = int.tryParse(message) ?? 0;
-                  int totalGiven = await firestoreService.gettotalGiven(docID);
-                  int totalReceived=await firestoreService.gettotalReceived(docID);
+                  int totalGiven = await firestoreService.getTotalGiven(docID);
+                  int totalReceived=await firestoreService.getTotalReceived(docID);
                   if (isRight) {
                     totalGiven=totalGiven-amount;
                     int balance=totalReceived - totalGiven;
-                    await firestoreService.updatetotalGiven(docID, totalGiven);
+                    await firestoreService.updateTotalGiven(docID, totalGiven);
                     await firestoreService.updateBalance(docID, balance);
                     update();
 
                   } else {
                     totalReceived=totalReceived-amount;
                     int balance=totalReceived - totalGiven;
-                    await firestoreService.updatetotalReceived(docID, totalReceived);
+                    await firestoreService.updateTotalReceived(docID, totalReceived);
                     await firestoreService.updateBalance(docID, balance);
                     update();
                   }
-
                   MessageService().deleteMessage(docID, messageID);
                   Navigator.pop(context);
                 },
@@ -161,8 +172,8 @@ class MessageBubble extends StatelessWidget {
         actions: <Widget>[
           ElevatedButton(
             onPressed: () async{
-              int totalGiven = await firestoreService.gettotalGiven(docID);
-              int totalReceived=await firestoreService.gettotalReceived(docID);
+              int totalGiven = await firestoreService.getTotalGiven(docID);
+              int totalReceived=await firestoreService.getTotalReceived(docID);
               int newAmount = int.tryParse(_amountController.text) ?? 0;
               int oldAmount = int.tryParse(message) ?? 0;
               int diff = newAmount - oldAmount;
@@ -170,14 +181,14 @@ class MessageBubble extends StatelessWidget {
               if (isRight) {
                 totalGiven=totalGiven+diff;
                 balance=totalReceived - totalGiven;
-                await firestoreService.updatetotalGiven(docID, totalGiven);
+                await firestoreService.updateTotalGiven(docID, totalGiven);
                 await firestoreService.updateBalance(docID, balance);
                 update();
 
               } else {
                 totalReceived=totalReceived+diff;
                 balance=totalReceived - totalGiven;
-                await firestoreService.updatetotalReceived(docID, totalReceived);
+                await firestoreService.updateTotalReceived(docID, totalReceived);
                 await firestoreService.updateBalance(docID, balance);
                 update();
               }

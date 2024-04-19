@@ -48,7 +48,7 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return isloading?const Center(child: CircularProgressIndicator(),):Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(title: const Text("Login"),centerTitle: true,),
+      appBar: AppBar(title: const Text("Login",style: TextStyle(fontSize: 28),),centerTitle: true,backgroundColor: Colors.transparent,foregroundColor: Theme.of(context).colorScheme.primary,),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

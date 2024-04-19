@@ -68,7 +68,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
             ElevatedButton(
               onPressed: () {
                 if (docID == null) {
-                  firestoreService.addNote(textController.text, _selectedValue, numberController.text);
+                  firestoreService.addContact(textController.text, _selectedValue, numberController.text);
                 }
                 textController.clear();
                 numberController.clear();
@@ -92,7 +92,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
           actions: [
             ElevatedButton(
               onPressed: () {
-                firestoreService.updateNote(docID, textController.text);
+                firestoreService.updateName(docID, textController.text);
                 textController.clear();
                 Navigator.pop(context);
               },
@@ -108,7 +108,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Your Ledger"),
+        title: Text("Your Ledger",style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
         backgroundColor: Theme.of(context).colorScheme.primary, // Use primary color from theme
         bottom: TabBar(
           controller: _tabController,
@@ -116,23 +116,23 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
             Tab(text: 'Customers'),
             Tab(text: 'Suppliers'),
           ],
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white,
+          indicatorColor: Theme.of(context).colorScheme.onPrimary,
+          labelColor: Theme.of(context).colorScheme.onPrimary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary,
         ),
       ),
       drawer: MyDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: openNoteBox,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.add), // Use primary color from theme
+        child: const Icon(Icons.add),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
           // Customer tab
           StreamBuilder<QuerySnapshot>(
-            stream: firestoreService.getCustomerNotesStream(),
+            stream: firestoreService.getCustomerNamesStream(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -153,24 +153,30 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                   String noteText = data['name'];
                   int balance=data['balance'];
-                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe: $balance' : 'Owes you: ${balance.abs()}';
-                  Color balanceColor = balance==0 ?Colors.black : balance > 0 ? Colors.green : Colors.red;
+                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
+                  Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10.0,
-                      vertical: 2.0,
                     ),
                     child: Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
-                        side: const BorderSide(color: Colors.grey),
+                        side: BorderSide(color: Theme.of(context).colorScheme.primary),
                       ),
+                      color: Theme.of(context).colorScheme.surface,
                       child: ListTile(
                         title: Text(
                           noteText,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        trailing: Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
+                            Text('${balance.abs()}',style: TextStyle(color: balanceColor,fontSize: 15,fontWeight: FontWeight.bold),)
+                          ],
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -191,7 +197,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
 
           // Supplier tab
           StreamBuilder<QuerySnapshot>(
-            stream: firestoreService.getSupplierNotesStream(),
+            stream: firestoreService.getSupplierNamesStream(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -210,31 +216,37 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                   String docID = document.id;
 
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                  String noteText = data['name'];
+                  String nameText = data['name'];
                   int balance=data['balance'];
-                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe: $balance' : 'Owes you: ${balance.abs()}';
-                  Color balanceColor = balance==0 ?Colors.black : balance > 0 ? Colors.green : Colors.red;
+                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
+                  Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10.0,
-                      vertical: 2.0,
+
                     ),
                     child: Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
-                        side: const BorderSide(color: Colors.grey),
+                        side: BorderSide(color: Theme.of(context).colorScheme.primary),
+
                       ),
+                      color: Theme.of(context).colorScheme.surface,
                       child: ListTile(
-                        title: Text(
-                          noteText,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        title: Text(nameText, style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        trailing: Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
+                            Text('${balance.abs()}',style: TextStyle(color: balanceColor,fontSize: 15,fontWeight: FontWeight.bold),)
+                          ],
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatPage(docID: docID, title: noteText),
+                              builder: (context) => ChatPage(docID: docID, title: nameText),
                             ),
                           );
                         },
@@ -287,7 +299,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
               ),
               GestureDetector(
                 onTap: () {
-                  firestoreService.deleteNote(docID);
+                  firestoreService.deleteContact(docID);
                   Navigator.pop(context);
                 },
                 child: Container(

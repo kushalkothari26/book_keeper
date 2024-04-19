@@ -28,7 +28,7 @@ class _VerifyState extends State<Verify> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Verification"),centerTitle: true,),
+      appBar: AppBar(title: const Text("Verification"),centerTitle: true,backgroundColor: Colors.transparent,foregroundColor: Theme.of(context).colorScheme.primary,),
       body: const Padding(
         padding: EdgeInsets.all(28),
         child: Center(

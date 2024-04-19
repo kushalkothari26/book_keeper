@@ -7,7 +7,7 @@ class FirestoreService {
 
 
   // operations for Customers and Suppliers
-  Future<void> addNote(String name, int type, String phoneNumber) {
+  Future<void> addContact(String name, int type, String phoneNumber) {
     if (user != null) {
       return names.add({
         'userID': user?.uid,
@@ -24,33 +24,33 @@ class FirestoreService {
     }
   }
 
-  Stream<QuerySnapshot> getCustomerNotesStream() {
+  Stream<QuerySnapshot> getCustomerNamesStream() {
     final notesStream = names.where('userID', isEqualTo: user?.uid).where('type', isEqualTo: 1).orderBy('timestamp', descending: true).snapshots();
     return notesStream;
   }
 
-  Stream<QuerySnapshot> getSupplierNotesStream() {
+  Stream<QuerySnapshot> getSupplierNamesStream() {
     final notesStream = names.where('userID', isEqualTo: user?.uid).where('type', isEqualTo: 2).orderBy('timestamp', descending: true).snapshots();
     return notesStream;
   }
 
-  Future<void> updateNote(String docID, String newNote) {
+  Future<void> updateName(String docID, String newName) {
     return names.doc(docID).update({
-      'name': newNote,
+      'name': newName,
       'timestamp': Timestamp.now(),
     });
   }
 
-  Future<void> deleteNote(String docID) {
+  Future<void> deleteContact(String docID) {
     return names.doc(docID).delete();
   }
 
   // operations for given, received and balance
-  Future<int> gettotalGiven(String docID) async {
+  Future<int> getTotalGiven(String docID) async {
     DocumentSnapshot snapshot = await names.doc(docID).get();
     return snapshot['totalGiven'] ?? 0;
   }
-  Future<int> gettotalReceived(String docID) async {
+  Future<int> getTotalReceived(String docID) async {
     DocumentSnapshot snapshot = await names.doc(docID).get();
     return snapshot['totalReceived'] ?? 0;
   }
@@ -58,10 +58,10 @@ class FirestoreService {
     DocumentSnapshot snapshot = await names.doc(docID).get();
     return snapshot['balance'] ?? 0;
   }
-  Future<void> updatetotalGiven(String docID, int newgiven) {
-    return names.doc(docID).update({'totalGiven': newgiven});
+  Future<void> updateTotalGiven(String docID, int newGiven) {
+    return names.doc(docID).update({'totalGiven': newGiven});
   }
-  Future<void> updatetotalReceived(String docID, int newReceived) {
+  Future<void> updateTotalReceived(String docID, int newReceived) {
     return names.doc(docID).update({'totalReceived': newReceived});
   }
   Future<void> updateBalance(String docID, int newBalance) {

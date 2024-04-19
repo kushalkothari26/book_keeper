@@ -29,25 +29,25 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _loadBalance();
   }
-  void update(int newBalance,int newtotalgiven,int newtotalreceived) {
+  void update(int newBalance,int newTotalGiven,int newTotalReceived) {
     setState(() {
       balance = newBalance;
-      totalGiven=newtotalgiven;
-      totalReceived=newtotalreceived;
+      totalGiven=newTotalGiven;
+      totalReceived=newTotalReceived;
     });
   }
   Future<void> _loadBalance() async {
     try {
-      int fetchedtotalgiven = await firestoreService.gettotalGiven(widget.docID);
-      int fetchedtotalreceived=await firestoreService.gettotalReceived(widget.docID);
+      int fetchTotalGiven = await firestoreService.getTotalGiven(widget.docID);
+      int fetchTotalReceived=await firestoreService.getTotalReceived(widget.docID);
       int fetchedBalance=await firestoreService.getBalance(widget.docID);
       setState(() {
-        totalGiven = fetchedtotalgiven;
-        totalReceived=fetchedtotalreceived;
+        totalGiven = fetchTotalGiven;
+        totalReceived=fetchTotalReceived;
         balance=fetchedBalance;
       });
     } catch (e) {
-      print('Failed to load balance: $e');
+      SnackBar(content: Text('Failed to load balance: $e'));
     }
   }
 
@@ -57,13 +57,13 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.title} | $balanceText'),
-        backgroundColor: Colors.blue,
+        title: Text('${widget.title} | $balanceText',style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue.shade100, Colors.blue.shade50],
+            colors: [Theme.of(context).colorScheme.tertiary, Theme.of(context).colorScheme.onTertiary],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -113,7 +113,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
             Container(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.primary,
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
@@ -191,7 +191,7 @@ class _ChatPageState extends State<ChatPage> {
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
                     ),
-                    child: const Text('Send Reminder', style: TextStyle(color: Colors.blue)),
+                    child: Text('Send Reminder', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
                   ),
                 ],
               ),
@@ -248,8 +248,8 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _updateBalance() async {
-    await firestoreService.updatetotalReceived(widget.docID, totalReceived);
-    await firestoreService.updatetotalGiven(widget.docID, totalGiven);
+    await firestoreService.updateTotalReceived(widget.docID, totalReceived);
+    await firestoreService.updateTotalGiven(widget.docID, totalGiven);
     await firestoreService.updateBalance(widget.docID, balance);
     setState(() {
       balance=balance;

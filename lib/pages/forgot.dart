@@ -22,7 +22,7 @@ class _ForgotState extends State<Forgot> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Forgot Password"),centerTitle: true,),
+      appBar: AppBar(title: const Text("Forgot Password"),centerTitle: true,backgroundColor: Colors.transparent,foregroundColor: Theme.of(context).colorScheme.primary,),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
