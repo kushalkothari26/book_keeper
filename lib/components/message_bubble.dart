@@ -58,7 +58,7 @@ class MessageBubble extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     comment,
                     style: TextStyle(
@@ -66,7 +66,7 @@ class MessageBubble extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     DateFormat('dd MMM yyyy HH:mm').format(timestamp),
                     style: TextStyle(

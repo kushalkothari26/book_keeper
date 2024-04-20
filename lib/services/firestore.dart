@@ -42,7 +42,10 @@ class FirestoreService {
   }
 
   Future<void> deleteContact(String docID) {
+
     return names.doc(docID).delete();
+
+
   }
 
   // operations for given, received and balance
@@ -76,6 +79,10 @@ class FirestoreService {
   Future<String> getPhoneNumber(String docID) async {
     DocumentSnapshot snapshot = await names.doc(docID).get();
     return snapshot['phoneNumber'] ?? 0;
+  }
+  Future<int> getType(String docID) async {
+    DocumentSnapshot snapshot = await names.doc(docID).get();
+    return snapshot['type'] ?? 0;
   }
 }
 

@@ -23,6 +23,7 @@ class _ChatPageState extends State<ChatPage> {
   int totalGiven = 0;
   int totalReceived = 0;
   int balance = 0;
+  int type=0;
 
   @override
   void initState() {
@@ -41,10 +42,12 @@ class _ChatPageState extends State<ChatPage> {
       int fetchTotalGiven = await firestoreService.getTotalGiven(widget.docID);
       int fetchTotalReceived=await firestoreService.getTotalReceived(widget.docID);
       int fetchedBalance=await firestoreService.getBalance(widget.docID);
+      int fetchType=await firestoreService.getType(widget.docID);
       setState(() {
         totalGiven = fetchTotalGiven;
         totalReceived=fetchTotalReceived;
         balance=fetchedBalance;
+        type=fetchType;
       });
     } catch (e) {
       SnackBar(content: Text('Failed to load balance: $e'));
@@ -87,7 +90,7 @@ class _ChatPageState extends State<ChatPage> {
                   snapshot.data!.docs.forEach((document) {
                     messages.add({
                       'messageID': document.id,
-                      'message': document['message'],
+                      'amount': document['amount'],
                       'comment': document['comment'],
                       'isRight': document['isRight'],
                       'timestamp': document['timestamp'],
@@ -100,7 +103,7 @@ class _ChatPageState extends State<ChatPage> {
                       return MessageBubble(
                         docID: widget.docID,
                         messageID: messages[index]['messageID'],
-                        message: messages[index]['message'],
+                        message: messages[index]['amount'],
                         comment: messages[index]['comment'],
                         isRight: messages[index]['isRight'],
                         timestamp: messages[index]['timestamp'].toDate(),
@@ -203,6 +206,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _showAmountDialog(bool isRight) async {
+
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -235,7 +239,7 @@ class _ChatPageState extends State<ChatPage> {
                 balance = totalReceived - totalGiven;
                 _updateBalance();
               }
-              messageService.addMessage(widget.docID, amount.toString(), commentController.text, isRight);
+              messageService.addMessage(widget.docID, amount.toString(), commentController.text, isRight,type);
               _amountController.clear();
               commentController.clear();
               Navigator.of(context).pop();

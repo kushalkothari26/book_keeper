@@ -4,6 +4,7 @@ import 'package:book_keeper/components/my_drawer.dart';
 import 'package:book_keeper/components/my_textfield.dart';
 import 'package:book_keeper/pages/chat_page.dart';
 import 'package:book_keeper/services/firestore.dart';
+import 'package:book_keeper/services/message_service.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -146,16 +147,16 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                 return Center(child: Text('Error: ${snapshot.error}'));
               }
 
-              List notesList = snapshot.data!.docs;
+              List namesList = snapshot.data!.docs;
 
               return ListView.builder(
-                itemCount: notesList.length,
+                itemCount: namesList.length,
                 itemBuilder: (context, index) {
-                  DocumentSnapshot document = notesList[index];
+                  DocumentSnapshot document = namesList[index];
                   String docID = document.id;
 
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                  String noteText = data['name'];
+                  String nameText = data['name'];
                   int balance=data['balance'];
                   String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
                   Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
@@ -171,7 +172,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                       color: Theme.of(context).colorScheme.surface,
                       child: ListTile(
                         title: Text(
-                          noteText,
+                          nameText,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         trailing: Column(
@@ -185,7 +186,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatPage(docID: docID, title: noteText),
+                              builder: (context) => ChatPage(docID: docID, title: nameText),
                             ),
                           );
                         },
@@ -211,12 +212,12 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                 return Center(child: Text('Error: ${snapshot.error}'));
               }
 
-              List notesList = snapshot.data!.docs;
+              List namesList = snapshot.data!.docs;
 
               return ListView.builder(
-                itemCount: notesList.length,
+                itemCount: namesList.length,
                 itemBuilder: (context, index) {
-                  DocumentSnapshot document = notesList[index];
+                  DocumentSnapshot document = namesList[index];
                   String docID = document.id;
 
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -303,7 +304,9 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
               ),
               GestureDetector(
                 onTap: () {
+
                   firestoreService.deleteContact(docID);
+
                   Navigator.pop(context);
                 },
                 child: Container(
