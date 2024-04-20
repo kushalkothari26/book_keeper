@@ -28,7 +28,7 @@ class MessageService {
     List<Map<String, dynamic>> messages = [];
 
     QuerySnapshot chatroomSnapshot = await messagesCollection.get();
-    print(chatroomSnapshot.docs.length);
+    // print(chatroomSnapshot.docs.length);
     for (DocumentSnapshot chatroomDoc in chatroomSnapshot.docs) {
 
       QuerySnapshot messageSnapshot = await chatroomDoc.reference
