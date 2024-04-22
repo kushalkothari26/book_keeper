@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:book_keeper/services/details_service.dart';
 import 'package:book_keeper/services/message_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -125,25 +128,36 @@ class _ReportPageState extends State<ReportPage> {
                       ],
                     ),
                     const SizedBox(height: 16.0),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (_startDate != null && _endDate != null) {
-                          setState(() {
-                            _messages = [];
-                          });
-                          List<Map<String, dynamic>> fetchedMessages =
-                          await _messageService.getTransactionsWithConTypeAndDate(
-                              _transactionType == 'Customer' ? 1 : 2, _startDate!, _endDate!);
-                          setState(() {
-                            _messages = fetchedMessages;
-                          });
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please select both start and end dates.')),
-                          );
-                        }
-                      },
-                      child: const Text('Generate Report'),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (_startDate != null && _endDate != null) {
+                              setState(() {
+                                _messages = [];
+                              });
+                              List<Map<String, dynamic>> fetchedMessages =
+                              await _messageService.getTransactionsWithConTypeAndDate(
+                                  _transactionType == 'Customer' ? 1 : 2, _startDate!, _endDate!);
+                              setState(() {
+                                _messages = fetchedMessages;
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please select both start and end dates.')),
+                              );
+                            }
+                          },
+                          child: const Text('Generate Report'),
+                        ),
+                        SizedBox(width: 10,),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await _generateAndSavePDF(userDetails['name'],userDetails['businessname'],userDetails['address'],userDetails['phno']);
+                          },
+                          child: const Text('Download Report'),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16.0),
                     if (_messages.isNotEmpty)
@@ -175,7 +189,7 @@ class _ReportPageState extends State<ReportPage> {
                             child: DataTable(
                               columns: const [
                                 DataColumn(label: Text('Date')),
-                                DataColumn(label: Text('Description')),
+                                DataColumn(label: Text('Name')),
                                 DataColumn(label: Text('Debit')),
                                 DataColumn(label: Text('Credit')),
                               ],
@@ -208,6 +222,77 @@ class _ReportPageState extends State<ReportPage> {
       ),
     );
   }
+  Future<void> _generateAndSavePDF(String name,String bname,String badd,int phno) async {
+    final pdf = pw.Document();
+    final DetailsService _detailsService = DetailsService();
+    _detailsService.getDetails(user!.uid);
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Ledger Report:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18.0)),
+              pw.SizedBox(height: 8.0),
+              pw.Text(
+                'Account Details:',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16.0),
+              ),
+              pw.Text(name),
+              pw.Text('Phone Number: $phno'),
+              pw.Text('Business Name: $bname'),
+              pw.Text('Address: $badd'),
+              pw.Text('Statement:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16.0)),
+              pw.SizedBox(height: 8.0),
+              pw.Table(
+                border: const pw.TableBorder(),
+                children: [
+                  pw.TableRow(
+                    children: [
+                      pw.Text('Date'),
+                      pw.Text('Name'),
+                      pw.Text('Debit'),
+                      pw.Text('Credit'),
+                    ]
+                  ),
+                  ..._messages.map((message) {
+                    DateTime dt = (message['timestamp'] as Timestamp).toDate();
+                    bool isDebit = message['gave'];
+                    double amount = double.parse(message['amount']);
+                    return pw.TableRow(
+                      children: [
+                        pw.Text('$dt'),
+                        pw.Text('${message['name']}'),
+                        isDebit ? pw.Text('$amount'): pw.Text(''),
+                        isDebit ? pw.Text('') : pw.Text('$amount'),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+              pw.SizedBox(height: 16.0),
+              pw.Text('Total Debit: ${_calculateTotalDebit().toStringAsFixed(2)}'),
+              pw.Text('Total Credit: ${_calculateTotalCredit().toStringAsFixed(2)}'),
+            ],
+          );
+        },
+      ),
+    );
+    final outputDir = Directory('/storage/emulated/0/Download');
+    if (!outputDir.existsSync()) {
+      outputDir.createSync(recursive: true);
+    }
+
+    final file = File('${outputDir.path}/ledger_report.pdf');
+    await file.writeAsBytes(await pdf.save());
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF saved to Downloads folder.')));
+    // final output = await getTemporaryDirectory();
+    // print(output.path);
+    // final file = File('${output.path}/bank_statement.pdf');
+    // await file.writeAsBytes(await pdf.save());
+    // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF saved to Downloads folder.')));
+  }
+
 
   double _calculateTotalDebit() {
     double totalDebit = 0;
