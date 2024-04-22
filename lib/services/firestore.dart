@@ -2,16 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FirestoreService {
-  final CollectionReference names = FirebaseFirestore.instance.collection('names');
+  final CollectionReference chats = FirebaseFirestore.instance.collection('chats');
   final user = FirebaseAuth.instance.currentUser;
 
 
   // operations for Customers and Suppliers
-  Future<void> addContact(String name, int type, String phoneNumber) {
+  Future<void> addContact(String chatName, int type, String phoneNumber) {
     if (user != null) {
-      return names.add({
+      return chats.add({
         'userID': user?.uid,
-        'name': name,
+        'chatName': chatName,
         'type': type,
         'phoneNumber': phoneNumber,
         'totalGiven':0,
@@ -25,63 +25,63 @@ class FirestoreService {
   }
 
   Stream<QuerySnapshot> getCustomerNamesStream() {
-    final notesStream = names.where('userID', isEqualTo: user?.uid).where('type', isEqualTo: 1).orderBy('timestamp', descending: true).snapshots();
+    final notesStream = chats.where('userID', isEqualTo: user?.uid).where('type', isEqualTo: 1).orderBy('timestamp', descending: true).snapshots();
     return notesStream;
   }
 
   Stream<QuerySnapshot> getSupplierNamesStream() {
-    final notesStream = names.where('userID', isEqualTo: user?.uid).where('type', isEqualTo: 2).orderBy('timestamp', descending: true).snapshots();
+    final notesStream = chats.where('userID', isEqualTo: user?.uid).where('type', isEqualTo: 2).orderBy('timestamp', descending: true).snapshots();
     return notesStream;
   }
 
-  Future<void> updateName(String docID, String newName) {
-    return names.doc(docID).update({
-      'name': newName,
+  Future<void> updateName(String chatID, String newChatName) {
+    return chats.doc(chatID).update({
+      'chatName': newChatName,
       'timestamp': Timestamp.now(),
     });
   }
 
-  Future<void> deleteContact(String docID) {
+  Future<void> deleteContact(String chatID) {
 
-    return names.doc(docID).delete();
+    return chats.doc(chatID).delete();
 
 
   }
 
   // operations for given, received and balance
-  Future<int> getTotalGiven(String docID) async {
-    DocumentSnapshot snapshot = await names.doc(docID).get();
+  Future<int> getTotalGiven(String chatID) async {
+    DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['totalGiven'] ?? 0;
   }
-  Future<int> getTotalReceived(String docID) async {
-    DocumentSnapshot snapshot = await names.doc(docID).get();
+  Future<int> getTotalReceived(String chatID) async {
+    DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['totalReceived'] ?? 0;
   }
-  Future<int> getBalance(String docID) async {
-    DocumentSnapshot snapshot = await names.doc(docID).get();
+  Future<int> getBalance(String chatID) async {
+    DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['balance'] ?? 0;
   }
-  Future<void> updateTotalGiven(String docID, int newGiven) {
-    return names.doc(docID).update({'totalGiven': newGiven});
+  Future<void> updateTotalGiven(String chatID, int newGiven) {
+    return chats.doc(chatID).update({'totalGiven': newGiven});
   }
-  Future<void> updateTotalReceived(String docID, int newReceived) {
-    return names.doc(docID).update({'totalReceived': newReceived});
+  Future<void> updateTotalReceived(String chatID, int newReceived) {
+    return chats.doc(chatID).update({'totalReceived': newReceived});
   }
-  Future<void> updateBalance(String docID, int newBalance) {
-    return names.doc(docID).update({'balance': newBalance});
+  Future<void> updateBalance(String chatID, int newBalance) {
+    return chats.doc(chatID).update({'balance': newBalance});
   }
 
 
   // operations for phone Number
-  Future<void> updatePhoneNumber(String docID, String ph) {
-    return names.doc(docID).update({'phoneNumber': ph});
+  Future<void> updatePhoneNumber(String chatID, String ph) {
+    return chats.doc(chatID).update({'phoneNumber': ph});
   }
-  Future<String> getPhoneNumber(String docID) async {
-    DocumentSnapshot snapshot = await names.doc(docID).get();
+  Future<String> getPhoneNumber(String chatID) async {
+    DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['phoneNumber'] ?? 0;
   }
-  Future<int> getType(String docID) async {
-    DocumentSnapshot snapshot = await names.doc(docID).get();
+  Future<int> getType(String chatID) async {
+    DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['type'] ?? 0;
   }
 }

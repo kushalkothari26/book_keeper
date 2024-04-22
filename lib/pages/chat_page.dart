@@ -6,10 +6,10 @@ import 'package:book_keeper/services/firestore.dart';
 
 
 class ChatPage extends StatefulWidget {
-  final String docID;
-  final String title;
+  final String chatID;
+  final String chatName;
 
-  const ChatPage({super.key, required this.docID, required this.title});
+  const ChatPage({super.key, required this.chatID, required this.chatName});
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -20,6 +20,8 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController commentController = TextEditingController();
   final MessageService messageService = MessageService();
   final FirestoreService firestoreService=FirestoreService();
+  FocusNode myFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   int totalGiven = 0;
   int totalReceived = 0;
   int balance = 0;
@@ -30,6 +32,7 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _loadBalance();
   }
+
   void update(int newBalance,int newTotalGiven,int newTotalReceived) {
     setState(() {
       balance = newBalance;
@@ -39,10 +42,10 @@ class _ChatPageState extends State<ChatPage> {
   }
   Future<void> _loadBalance() async {
     try {
-      int fetchTotalGiven = await firestoreService.getTotalGiven(widget.docID);
-      int fetchTotalReceived=await firestoreService.getTotalReceived(widget.docID);
-      int fetchedBalance=await firestoreService.getBalance(widget.docID);
-      int fetchType=await firestoreService.getType(widget.docID);
+      int fetchTotalGiven = await firestoreService.getTotalGiven(widget.chatID);
+      int fetchTotalReceived=await firestoreService.getTotalReceived(widget.chatID);
+      int fetchedBalance=await firestoreService.getBalance(widget.chatID);
+      int fetchType=await firestoreService.getType(widget.chatID);
       setState(() {
         totalGiven = fetchTotalGiven;
         totalReceived=fetchTotalReceived;
@@ -60,7 +63,7 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.title} | $balanceText',style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
+        title: Text('${widget.chatName} | $balanceText',style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Container(
@@ -75,7 +78,8 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             Expanded(
               child: StreamBuilder(
-                stream: messageService.getMessagesStream(widget.docID),
+
+                stream: messageService.getTransactionsStream(widget.chatID),
                 builder: (context, snapshot) {
 
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -86,27 +90,29 @@ class _ChatPageState extends State<ChatPage> {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
 
-                  List<Map<String, dynamic>> messages = [];
+                  List<Map<String, dynamic>> transactions = [];
                   snapshot.data!.docs.forEach((document) {
-                    messages.add({
-                      'messageID': document.id,
+                    transactions.add({
+                      'transactionID': document.id,
+                      'name':widget.chatName,
                       'amount': document['amount'],
                       'comment': document['comment'],
-                      'isRight': document['isRight'],
+                      'gave': document['gave'],
                       'timestamp': document['timestamp'],
                     });
                   });
 
                   return ListView.builder(
-                    itemCount: messages.length,
+                    controller: _scrollController,
+                    itemCount: transactions.length,
                     itemBuilder: (context, index) {
                       return MessageBubble(
-                        docID: widget.docID,
-                        messageID: messages[index]['messageID'],
-                        message: messages[index]['amount'],
-                        comment: messages[index]['comment'],
-                        isRight: messages[index]['isRight'],
-                        timestamp: messages[index]['timestamp'].toDate(),
+                        docID: widget.chatID,
+                        transactionID: transactions[index]['transactionID'],
+                        amount: transactions[index]['amount'],
+                        comment: transactions[index]['comment'],
+                        isRight: transactions[index]['gave'],
+                        timestamp: transactions[index]['timestamp'].toDate(),
                         update: _loadBalance,
                       );
 
@@ -146,7 +152,7 @@ class _ChatPageState extends State<ChatPage> {
                   ElevatedButton(
                     onPressed: () async {
                       if (balance<0) {
-                        String phoneNumber = await firestoreService.getPhoneNumber(widget.docID);
+                        String phoneNumber = await firestoreService.getPhoneNumber(widget.chatID);
                         if ({phoneNumber}.isNotEmpty && phoneNumber!="" && (phoneNumber.length==12 || phoneNumber.length==10)) {
                           String reminderMessage =
                               "Hi there, just a friendly reminder that you owe us ₹$balance. Please let us know if you need any assistance. Thank you!";
@@ -239,7 +245,7 @@ class _ChatPageState extends State<ChatPage> {
                 balance = totalReceived - totalGiven;
                 _updateBalance();
               }
-              messageService.addMessage(widget.docID, amount.toString(), commentController.text, isRight,type);
+              messageService.addTransaction(widget.chatID, amount.toString(), commentController.text, isRight,type,widget.chatName);
               _amountController.clear();
               commentController.clear();
               Navigator.of(context).pop();
@@ -252,9 +258,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _updateBalance() async {
-    await firestoreService.updateTotalReceived(widget.docID, totalReceived);
-    await firestoreService.updateTotalGiven(widget.docID, totalGiven);
-    await firestoreService.updateBalance(widget.docID, balance);
+    await firestoreService.updateTotalReceived(widget.chatID, totalReceived);
+    await firestoreService.updateTotalGiven(widget.chatID, totalGiven);
+    await firestoreService.updateBalance(widget.chatID, balance);
     setState(() {
       balance=balance;
       totalReceived=totalReceived;
@@ -278,8 +284,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              // Update the phone number in the database
-              await firestoreService.updatePhoneNumber(widget.docID, newPhoneNumber);
+              await firestoreService.updatePhoneNumber(widget.chatID, newPhoneNumber);
               Navigator.pop(context);
             },
             child: const Text('Update'),
@@ -293,5 +298,3 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 }
-
-

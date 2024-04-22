@@ -1,10 +1,11 @@
 import 'package:book_keeper/services/details_service.dart';
 import 'package:book_keeper/services/message_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ReportPage extends StatefulWidget {
-  const ReportPage({Key? key}) : super(key: key);
+  const ReportPage({super.key});
 
   @override
   State<ReportPage> createState() => _ReportPageState();
@@ -13,7 +14,6 @@ class ReportPage extends StatefulWidget {
 class _ReportPageState extends State<ReportPage> {
   final DetailsService _detailsService = DetailsService();
   final MessageService _messageService = MessageService();
-
   final user = FirebaseAuth.instance.currentUser;
 
   String _transactionType = 'Customer';
@@ -39,147 +39,168 @@ class _ReportPageState extends State<ReportPage> {
               return Text('Error: ${snapshot.error}');
             } else {
               final userDetails = snapshot.data!;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Account Details:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
-                  ),
-                  const SizedBox(height: 8.0),
-                  Card(
-                    child: ListTile(
-                      title: Text(userDetails['name']),
-                      subtitle: Column(
+              return SingleChildScrollView( // Wrap the Column in SingleChildScrollView
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Select Transactions:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                    ),
+                    const SizedBox(height: 8.0),
+                    DropdownButton<String>(
+                      value: _transactionType,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _transactionType = newValue!;
+                        });
+                      },
+                      items: <String>['Customer', 'Supplier']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16.0),
+                    const Text(
+                      'Select Date Range:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'Start Date',
+                              border: OutlineInputBorder(),
+                            ),
+                            readOnly: true,
+                            controller: TextEditingController(
+                              text: _startDate != null ? _startDate.toString() : '',
+                            ),
+                            onTap: () async {
+                              DateTime? pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime.now(),
+                              );
+                              if (pickedDate != null && pickedDate != _startDate) {
+                                setState(() {
+                                  _startDate = pickedDate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8.0),
+                        Expanded(
+                          child: TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'End Date',
+                              border: OutlineInputBorder(),
+                            ),
+                            readOnly: true,
+                            controller: TextEditingController(
+                              text: _endDate != null ? _endDate.toString() : '',
+                            ),
+                            onTap: () async {
+                              DateTime? pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime(2025),
+                              );
+                              if (pickedDate != null && pickedDate != _endDate) {
+                                setState(() {
+                                  _endDate = pickedDate;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_startDate != null && _endDate != null) {
+                          setState(() {
+                            _messages = [];
+                          });
+                          List<Map<String, dynamic>> fetchedMessages =
+                          await _messageService.getTransactionsWithConTypeAndDate(
+                              _transactionType == 'Customer' ? 1 : 2, _startDate!, _endDate!);
+                          setState(() {
+                            _messages = fetchedMessages;
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please select both start and end dates.')),
+                          );
+                        }
+                      },
+                      child: const Text('Generate Report'),
+                    ),
+                    const SizedBox(height: 16.0),
+                    if (_messages.isNotEmpty)
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Phone Number: ${userDetails['phno']}'),
-                          Text('Business Name: ${userDetails['businessname']}'),
-                          Text('Address: ${userDetails['address']}'),
+                          const Text('Bank Statement:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0)),
+                          const SizedBox(height: 8.0),
+                          const Text(
+                            'Account Details:',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                          ),
+                          const SizedBox(height: 8.0),
+                          Card(
+                            child: ListTile(
+                              title: Text(userDetails['name']),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Phone Number: ${userDetails['phno']}'),
+                                  Text('Business Name: ${userDetails['businessname']}'),
+                                  Text('Address: ${userDetails['address']}'),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              columns: const [
+                                DataColumn(label: Text('Date')),
+                                DataColumn(label: Text('Description')),
+                                DataColumn(label: Text('Debit')),
+                                DataColumn(label: Text('Credit')),
+                              ],
+                              rows: _messages.map<DataRow>((message) {
+                                DateTime dt = (message['timestamp'] as Timestamp).toDate();
+                                bool isDebit = message['gave'];
+                                double amount = double.parse(message['amount']);
+                                return DataRow(
+                                  cells: [
+                                    DataCell(Text('$dt')),
+                                    DataCell(Text('${message['name']}')),
+                                    isDebit ? DataCell(Text('₹$amount')) : const DataCell(Text('')),
+                                    isDebit ? const DataCell(Text('')) : DataCell(Text('₹$amount')),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 16.0),
+                          Text('Total Debit: ₹${_calculateTotalDebit().toStringAsFixed(2)}'),
+                          Text('Total Credit: ₹${_calculateTotalCredit().toStringAsFixed(2)}'),
                         ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  const Text(
-                    'Select Transactions:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
-                  ),
-                  const SizedBox(height: 8.0),
-                  DropdownButton<String>(
-                    value: _transactionType,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _transactionType = newValue!;
-                      });
-                    },
-                    items: <String>['Customer', 'Supplier']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 16.0),
-                  const Text(
-                    'Select Date Range:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
-                  ),
-                  const SizedBox(height: 8.0),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'Start Date',
-                            border: OutlineInputBorder(),
-                          ),
-                          readOnly: true,
-                          controller: TextEditingController(
-                            text: _startDate != null ? _startDate.toString() : '',
-                          ),
-                          onTap: () async {
-                            DateTime? pickedDate = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(1900),
-                              lastDate: DateTime.now(),
-                            );
-                            if (pickedDate != null && pickedDate != _startDate) {
-                              setState(() {
-                                _startDate = pickedDate;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Expanded(
-                        child: TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'End Date',
-                            border: OutlineInputBorder(),
-                          ),
-                          readOnly: true,
-                          controller: TextEditingController(
-                            text: _endDate != null ? _endDate.toString() : '',
-                          ),
-                          onTap: () async {
-                            DateTime? pickedDate = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(1900),
-                              lastDate: DateTime.now(),
-                            );
-                            if (pickedDate != null && pickedDate != _endDate) {
-                              setState(() {
-                                _endDate = pickedDate;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_startDate != null && _endDate != null) {
-                        setState(() {
-                          _messages = [];
-                        });
-                        List<Map<String, dynamic>> fetchedMessages =
-                        await _messageService.getMessagesWithConTypeAndDate(
-                            _transactionType == 'Customer' ? 1 : 2, _startDate!, _endDate!);
-                        print('Fetched messages: $fetchedMessages');
-                        setState(() {
-                          _messages = fetchedMessages;
-                        });
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please select both start and end dates.')),
-                        );
-                      }
-                    },
-                    child: const Text('Generate Report'),
-                  ),
-                  const SizedBox(height: 16.0),
-                  if (_messages.isNotEmpty)
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          Map<String, dynamic> message = _messages[index];
-                          return ListTile(
-                            title: Text('Message: ${message['message']}'),
-                            subtitle: Text('Comment: ${message['comment']}'),
-                            // Add more details as needed...
-                          );
-                        },
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               );
             }
           },
@@ -187,4 +208,25 @@ class _ReportPageState extends State<ReportPage> {
       ),
     );
   }
+
+  double _calculateTotalDebit() {
+    double totalDebit = 0;
+    for (var message in _messages) {
+      if (message['gave']) {
+        totalDebit += double.parse(message['amount']);
+      }
+    }
+    return totalDebit;
+  }
+
+  double _calculateTotalCredit() {
+    double totalCredit = 0;
+    for (var message in _messages) {
+      if (!message['gave']) {
+        totalCredit += double.parse(message['amount']);
+      }
+    }
+    return totalCredit;
+  }
+
 }

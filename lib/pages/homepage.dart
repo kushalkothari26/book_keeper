@@ -4,7 +4,6 @@ import 'package:book_keeper/components/my_drawer.dart';
 import 'package:book_keeper/components/my_textfield.dart';
 import 'package:book_keeper/pages/chat_page.dart';
 import 'package:book_keeper/services/firestore.dart';
-import 'package:book_keeper/services/message_service.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -32,8 +31,8 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  void newNameBox({String? docID}) {
-    if (docID == null) {
+  void newNameBox({String? chatID}) {
+    if (chatID == null) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -52,7 +51,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                     _selectedValue = value as int;
                   });
                   Navigator.pop(context);
-                  newNameBox(docID: docID);
+                  newNameBox(chatID: chatID);
                 },
               ),
               RadioListTile(
@@ -64,7 +63,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                     _selectedValue = value as int;
                   });
                   Navigator.pop(context);
-                  newNameBox(docID: docID);
+                  newNameBox(chatID: chatID);
                 },
               ),
             ],
@@ -72,7 +71,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
           actions: [
             ElevatedButton(
               onPressed: () {
-                if (docID == null) {
+                if (chatID == null) {
                   firestoreService.addContact(textController.text, _selectedValue, numberController.text);
                 }
                 textController.clear();
@@ -97,7 +96,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
           actions: [
             ElevatedButton(
               onPressed: () {
-                firestoreService.updateName(docID, textController.text);
+                firestoreService.updateName(chatID, textController.text);
                 textController.clear();
                 Navigator.pop(context);
               },
@@ -153,10 +152,10 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                 itemCount: namesList.length,
                 itemBuilder: (context, index) {
                   DocumentSnapshot document = namesList[index];
-                  String docID = document.id;
+                  String chatID = document.id;
 
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                  String nameText = data['name'];
+                  String nameText = data['chatName'];
                   int balance=data['balance'];
                   String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
                   Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
@@ -186,11 +185,11 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatPage(docID: docID, title: nameText),
+                              builder: (context) => ChatPage(chatID: chatID, chatName: nameText),
                             ),
                           );
                         },
-                        onLongPress: () => _showOptionsDialog(context,docID),
+                        onLongPress: () => _showOptionsDialog(context,chatID),
 
                       ),
                     ),
@@ -218,7 +217,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                 itemCount: namesList.length,
                 itemBuilder: (context, index) {
                   DocumentSnapshot document = namesList[index];
-                  String docID = document.id;
+                  String chatID = document.id;
 
                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                   String nameText = data['name'];
@@ -251,11 +250,11 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatPage(docID: docID, title: nameText),
+                              builder: (context) => ChatPage(chatID: chatID, chatName: nameText),
                             ),
                           );
                         },
-                        onLongPress: () => _showOptionsDialog(context,docID),
+                        onLongPress: () => _showOptionsDialog(context,chatID),
                       ),
                     ),
                   );
@@ -267,7 +266,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
       ),
     );
   }
-  void _showOptionsDialog(BuildContext context, String docID) {
+  void _showOptionsDialog(BuildContext context, String chatID) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -283,7 +282,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
               GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
-                  newNameBox(docID: docID);
+                  newNameBox(chatID: chatID);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -305,7 +304,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
               GestureDetector(
                 onTap: () {
 
-                  firestoreService.deleteContact(docID);
+                  firestoreService.deleteContact(chatID);
 
                   Navigator.pop(context);
                 },

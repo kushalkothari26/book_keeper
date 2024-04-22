@@ -4,21 +4,21 @@ import 'package:book_keeper/services/message_service.dart';
 import 'package:book_keeper/services/firestore.dart';
 
 class MessageBubble extends StatelessWidget {
-  final String message;
+  final String amount;
   final String comment;
   final bool isRight;
   final DateTime timestamp;
   final String docID;
-  final String messageID;
+  final String transactionID;
   final Function() update;
 
   MessageBubble({
     super.key,
-    required this.message,
+    required this.amount,
     required this.isRight,
     required this.timestamp,
     required this.docID,
-    required this.messageID,
+    required this.transactionID,
     required this.comment,
     required this.update
   });
@@ -51,7 +51,7 @@ class MessageBubble extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "₹$message",
+                    "₹$amount",
                     style: TextStyle(
                       color: isRight ? Colors.red : Colors.green,
                       fontSize: 18,
@@ -120,24 +120,24 @@ class MessageBubble extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () async{
-                  int amount = int.tryParse(message) ?? 0;
+                  int currentAmount = int.tryParse(amount) ?? 0;
                   int totalGiven = await firestoreService.getTotalGiven(docID);
                   int totalReceived=await firestoreService.getTotalReceived(docID);
                   if (isRight) {
-                    totalGiven=totalGiven-amount;
+                    totalGiven=totalGiven-currentAmount;
                     int balance=totalReceived - totalGiven;
                     await firestoreService.updateTotalGiven(docID, totalGiven);
                     await firestoreService.updateBalance(docID, balance);
                     update();
 
                   } else {
-                    totalReceived=totalReceived-amount;
+                    totalReceived=totalReceived-currentAmount;
                     int balance=totalReceived - totalGiven;
                     await firestoreService.updateTotalReceived(docID, totalReceived);
                     await firestoreService.updateBalance(docID, balance);
                     update();
                   }
-                  MessageService().deleteMessage(docID, messageID);
+                  MessageService().deleteTransaction(transactionID);
                   Navigator.pop(context);
                 },
                 child: Container(
@@ -175,7 +175,7 @@ class MessageBubble extends StatelessWidget {
               int totalGiven = await firestoreService.getTotalGiven(docID);
               int totalReceived=await firestoreService.getTotalReceived(docID);
               int newAmount = int.tryParse(_amountController.text) ?? 0;
-              int oldAmount = int.tryParse(message) ?? 0;
+              int oldAmount = int.tryParse(amount) ?? 0;
               int diff = newAmount - oldAmount;
               int balance=0;
               if (isRight) {
@@ -193,7 +193,7 @@ class MessageBubble extends StatelessWidget {
                 update();
               }
               MessageService()
-                  .updateMessage(docID, messageID, _amountController.text);
+                  .updateTransaction(transactionID, _amountController.text);
               _amountController.clear();
 
               Navigator.of(context).pop();
