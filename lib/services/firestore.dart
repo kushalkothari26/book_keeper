@@ -34,11 +34,16 @@ class FirestoreService {
     return notesStream;
   }
 
-  Future<void> updateName(String chatID, String newChatName) {
+  Future<void> updateChatNameAndPhoneNumber(String chatID, String newChatName, String newPhoneNumber) {
     return chats.doc(chatID).update({
       'chatName': newChatName,
+      'phoneNumber':newPhoneNumber,
       'timestamp': Timestamp.now(),
     });
+  }
+  Future<String> getChatName(String chatID) async {
+    DocumentSnapshot snapshot = await chats.doc(chatID).get();
+    return snapshot['chatName'] ?? 0;
   }
 
   Future<void> deleteContact(String chatID) {

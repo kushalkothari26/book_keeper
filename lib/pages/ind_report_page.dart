@@ -7,19 +7,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-class ReportPage extends StatefulWidget {
-  const ReportPage({super.key});
+class IndReportPage extends StatefulWidget {
+  final String chatID;
+  const IndReportPage({super.key,required this.chatID});
 
   @override
-  State<ReportPage> createState() => _ReportPageState();
+  State<IndReportPage> createState() => _IndReportPageState();
 }
 
-class _ReportPageState extends State<ReportPage> {
+class _IndReportPageState extends State<IndReportPage> {
   final DetailsService _detailsService = DetailsService();
   final MessageService _messageService = MessageService();
   final user = FirebaseAuth.instance.currentUser;
 
-  String _transactionType = 'Customer';
   DateTime? _startDate;
   DateTime? _endDate;
 
@@ -46,26 +46,6 @@ class _ReportPageState extends State<ReportPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Select Transactions:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
-                    ),
-                    const SizedBox(height: 8.0),
-                    DropdownButton<String>(
-                      value: _transactionType,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _transactionType = newValue!;
-                        });
-                      },
-                      items: <String>['Customer', 'Supplier']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    ),
                     const SizedBox(height: 16.0),
                     const Text(
                       'Select Date Range:',
@@ -137,8 +117,7 @@ class _ReportPageState extends State<ReportPage> {
                                 _messages = [];
                               });
                               List<Map<String, dynamic>> fetchedMessages =
-                              await _messageService.getTransactionsWithConTypeAndDate(
-                                  _transactionType == 'Customer' ? 1 : 2, _startDate!, _endDate!);
+                              await _messageService.getTransactionsWithDate(widget.chatID,_startDate!, _endDate!);
                               setState(() {
                                 _messages = fetchedMessages;
                               });
@@ -248,12 +227,12 @@ class _ReportPageState extends State<ReportPage> {
                 border: const pw.TableBorder(),
                 children: [
                   pw.TableRow(
-                    children: [
-                      pw.Text('Date'),
-                      pw.Text('Name'),
-                      pw.Text('Debit'),
-                      pw.Text('Credit'),
-                    ]
+                      children: [
+                        pw.Text('Date'),
+                        pw.Text('Name'),
+                        pw.Text('Debit'),
+                        pw.Text('Credit'),
+                      ]
                   ),
                   ..._messages.map((message) {
                     DateTime dt = (message['timestamp'] as Timestamp).toDate();
@@ -313,5 +292,4 @@ class _ReportPageState extends State<ReportPage> {
     }
     return totalCredit;
   }
-
 }

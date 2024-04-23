@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:book_keeper/services/details_service.dart';
 
 class AccountDetailsPage extends StatefulWidget {
-  const AccountDetailsPage({Key? key});
+  const AccountDetailsPage({super.key});
 
   @override
   _AccountDetailsPageState createState() => _AccountDetailsPageState();
