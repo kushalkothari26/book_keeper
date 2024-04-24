@@ -29,8 +29,8 @@ class _ReportPageState extends State<ReportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaction Report'),
-      ),
+        title: Text('Transaction Report',style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
+        backgroundColor: Theme.of(context).colorScheme.primary),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<Map<String, dynamic>>(

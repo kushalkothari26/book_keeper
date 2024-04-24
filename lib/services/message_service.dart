@@ -101,10 +101,10 @@ class MessageService {
         .delete();
   }
 
-  Future<void> updateTransaction(String transactionID, String newAmount) {
+  Future<void> updateTransaction(String transactionID, String newAmount,String newComment) {
     return transactionsCollection
         .doc(transactionID)
-        .update({'amount': newAmount});
+        .update({'amount': newAmount,'comment':newComment});
   }
 
 }

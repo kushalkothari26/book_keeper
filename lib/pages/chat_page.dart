@@ -1,3 +1,4 @@
+import 'package:book_keeper/pages/ind_report_page.dart';
 import 'package:book_keeper/services/whatsapp_service.dart';
 import 'package:flutter/material.dart';
 import 'package:book_keeper/components/message_bubble.dart';
@@ -62,14 +63,73 @@ class _ChatPageState extends State<ChatPage> {
     String balanceText = balance >= 0 ? 'You Owe: $balance' : 'Owes you: ${balance.abs()}';
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.chatName} | $balanceText',style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
-      body: Container(
+        appBar:AppBar(
+          title: Row(
+            children: [
+              Text(
+                widget.chatName,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontSize: 25,
+                ),
+              ),
+            ],
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(60),
+            child: Column(
+              children: [
+                Container(
+                  width: 325,
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(30),color: Theme.of(context).colorScheme.secondary,),
+
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 1),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            balanceText,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ElevatedButton(
+                            style: ButtonStyle(backgroundColor:  MaterialStateProperty.all<Color>(Colors.white)),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      IndReportPage(chatID: widget.chatID),
+                                ),
+                              );
+                            },
+                            child: const Text('View Report',),
+                          ),
+
+                        ],
+
+                      ),
+                      const SizedBox(height: 1,)
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10,)
+              ],
+            ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+        body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Theme.of(context).colorScheme.tertiary, Theme.of(context).colorScheme.onTertiary],
+            colors: [Theme.of(context).colorScheme.onBackground, Theme.of(context).colorScheme.surface],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -111,7 +171,7 @@ class _ChatPageState extends State<ChatPage> {
                         transactionID: transactions[index]['transactionID'],
                         amount: transactions[index]['amount'],
                         comment: transactions[index]['comment'],
-                        isRight: transactions[index]['gave'],
+                        gave: transactions[index]['gave'],
                         timestamp: transactions[index]['timestamp'].toDate(),
                         update: _loadBalance,
                       );
@@ -122,7 +182,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
             Container(
-              color: Theme.of(context).colorScheme.primary,
+              color: Colors.transparent,
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
@@ -155,8 +215,8 @@ class _ChatPageState extends State<ChatPage> {
                         String phoneNumber = await firestoreService.getPhoneNumber(widget.chatID);
                         if ({phoneNumber}.isNotEmpty && phoneNumber!="" && (phoneNumber.length==12 || phoneNumber.length==10)) {
                           String reminderMessage =
-                              "Hi there, just a friendly reminder that you owe us ₹$balance. Please let us know if you need any assistance. Thank you!";
-                          String link = ""; // Add the link here if needed
+                              "Hi there, just a friendly reminder that you owe us ₹${balance.abs()}. Please let us know if you need any assistance. Thank you!";
+                          String link = "";
                           await share(reminderMessage, link, phoneNumber);
                         } else {
                           showDialog(

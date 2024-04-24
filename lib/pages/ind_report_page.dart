@@ -5,9 +5,12 @@ import 'package:book_keeper/services/message_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:pdf/widgets.dart' as pw;
-
+import 'package:book_keeper/services/locnot_service.dart';
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin=FlutterLocalNotificationsPlugin();
 class IndReportPage extends StatefulWidget {
+
   final String chatID;
   const IndReportPage({super.key,required this.chatID});
 
@@ -16,6 +19,7 @@ class IndReportPage extends StatefulWidget {
 }
 
 class _IndReportPageState extends State<IndReportPage> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin=FlutterLocalNotificationsPlugin();
   final DetailsService _detailsService = DetailsService();
   final MessageService _messageService = MessageService();
   final user = FirebaseAuth.instance.currentUser;
@@ -27,10 +31,11 @@ class _IndReportPageState extends State<IndReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    LocalNotification.initialize(flutterLocalNotificationsPlugin);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaction Report'),
-      ),
+          title: Text('Transaction Report',style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
+          backgroundColor: Theme.of(context).colorScheme.primary),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<Map<String, dynamic>>(
@@ -121,6 +126,7 @@ class _IndReportPageState extends State<IndReportPage> {
                               setState(() {
                                 _messages = fetchedMessages;
                               });
+
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Please select both start and end dates.')),
@@ -133,6 +139,7 @@ class _IndReportPageState extends State<IndReportPage> {
                         ElevatedButton(
                           onPressed: () async {
                             await _generateAndSavePDF(userDetails['name'],userDetails['businessname'],userDetails['address'],userDetails['phno']);
+                            LocalNotification.showBigTextNotification(title: 'PDF Downloaded', body: 'Saved in Downloads', fln: flutterLocalNotificationsPlugin);
                           },
                           child: const Text('Download Report'),
                         ),
@@ -163,12 +170,13 @@ class _IndReportPageState extends State<IndReportPage> {
                               ),
                             ),
                           ),
+
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: DataTable(
                               columns: const [
                                 DataColumn(label: Text('Date')),
-                                DataColumn(label: Text('Name')),
+                                DataColumn(label: Text('Description')),
                                 DataColumn(label: Text('Debit')),
                                 DataColumn(label: Text('Credit')),
                               ],
@@ -179,7 +187,7 @@ class _IndReportPageState extends State<IndReportPage> {
                                 return DataRow(
                                   cells: [
                                     DataCell(Text('$dt')),
-                                    DataCell(Text('${message['name']}')),
+                                    DataCell(Text('${message['comment']}')),
                                     isDebit ? DataCell(Text('₹$amount')) : const DataCell(Text('')),
                                     isDebit ? const DataCell(Text('')) : DataCell(Text('₹$amount')),
                                   ],
@@ -265,6 +273,7 @@ class _IndReportPageState extends State<IndReportPage> {
     final file = File('${outputDir.path}/ledger_report.pdf');
     await file.writeAsBytes(await pdf.save());
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF saved to Downloads folder.')));
+    LocalNotification.showBigTextNotification(title: 'PDF Downloaded', body: 'Tap to open it', fln: flutterLocalNotificationsPlugin);
     // final output = await getTemporaryDirectory();
     // print(output.path);
     // final file = File('${output.path}/bank_statement.pdf');

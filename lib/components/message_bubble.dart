@@ -6,7 +6,7 @@ import 'package:book_keeper/services/firestore.dart';
 class MessageBubble extends StatelessWidget {
   final String amount;
   final String comment;
-  final bool isRight;
+  final bool gave;
   final DateTime timestamp;
   final String docID;
   final String transactionID;
@@ -15,7 +15,7 @@ class MessageBubble extends StatelessWidget {
   MessageBubble({
     super.key,
     required this.amount,
-    required this.isRight,
+    required this.gave,
     required this.timestamp,
     required this.docID,
     required this.transactionID,
@@ -24,13 +24,14 @@ class MessageBubble extends StatelessWidget {
   });
 
   final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _commentController = TextEditingController();
   final FirestoreService firestoreService= FirestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment:
-          isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          gave ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         GestureDetector(
           onLongPress: () => _showOptionsDialog(context),
@@ -39,7 +40,7 @@ class MessageBubble extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
               side: BorderSide(
-                color: isRight ? Colors.red : Colors.green,
+                color: gave ? Colors.red : Colors.green,
                 width: 2,
               ),
             ),
@@ -53,7 +54,7 @@ class MessageBubble extends StatelessWidget {
                   Text(
                     "₹$amount",
                     style: TextStyle(
-                      color: isRight ? Colors.red : Colors.green,
+                      color: gave ? Colors.red : Colors.green,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -62,7 +63,7 @@ class MessageBubble extends StatelessWidget {
                   Text(
                     comment,
                     style: TextStyle(
-                      color: isRight ? Colors.red : Colors.green,
+                      color: gave ? Colors.red : Colors.green,
                       fontSize: 12,
                     ),
                   ),
@@ -70,7 +71,7 @@ class MessageBubble extends StatelessWidget {
                   Text(
                     DateFormat('dd MMM yyyy HH:mm').format(timestamp),
                     style: TextStyle(
-                      color: isRight ? Colors.red : Colors.green,
+                      color: gave ? Colors.red : Colors.green,
                       fontSize: 10,
                     ),
                   ),
@@ -99,7 +100,7 @@ class MessageBubble extends StatelessWidget {
             children: <Widget>[
               GestureDetector(
                 onTap: () {
-                  _showAmountDialog(context);
+                  _showAmountDialog(context,amount,comment);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -123,7 +124,7 @@ class MessageBubble extends StatelessWidget {
                   int currentAmount = int.tryParse(amount) ?? 0;
                   int totalGiven = await firestoreService.getTotalGiven(docID);
                   int totalReceived=await firestoreService.getTotalReceived(docID);
-                  if (isRight) {
+                  if (gave) {
                     totalGiven=totalGiven-currentAmount;
                     int balance=totalReceived - totalGiven;
                     await firestoreService.updateTotalGiven(docID, totalGiven);
@@ -159,15 +160,25 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  Future<void> _showAmountDialog(BuildContext context) async {
+  Future<void> _showAmountDialog(BuildContext context,String initialAmount,String initialComment) async {
+    _amountController.text = initialAmount;
+    _commentController.text=initialComment;
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Updated Amount'),
-        content: TextField(
-          controller: _amountController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Amount'),
+        content: Column(
+          children: [
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Amount'),
+            ),
+            TextField(
+              controller: _commentController,
+              decoration: const InputDecoration(labelText: 'Comment'),
+            ),
+          ],
         ),
         actions: <Widget>[
           ElevatedButton(
@@ -178,7 +189,7 @@ class MessageBubble extends StatelessWidget {
               int oldAmount = int.tryParse(amount) ?? 0;
               int diff = newAmount - oldAmount;
               int balance=0;
-              if (isRight) {
+              if (gave) {
                 totalGiven=totalGiven+diff;
                 balance=totalReceived - totalGiven;
                 await firestoreService.updateTotalGiven(docID, totalGiven);
@@ -193,8 +204,9 @@ class MessageBubble extends StatelessWidget {
                 update();
               }
               MessageService()
-                  .updateTransaction(transactionID, _amountController.text);
+                  .updateTransaction(transactionID, _amountController.text,_commentController.text);
               _amountController.clear();
+              _commentController.clear();
 
               Navigator.of(context).pop();
             },
@@ -204,6 +216,4 @@ class MessageBubble extends StatelessWidget {
       ),
     );
   }
-
-
 }
