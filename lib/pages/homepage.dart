@@ -202,7 +202,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                             ),
                           );
                         },
-                        onLongPress: () => _showOptionsDialog(context,chatID),
+                        onLongPress: () => _showOptionsDialog(context,chatID,nameText),
 
                       ),
                     ),
@@ -267,7 +267,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                             ),
                           );
                         },
-                        onLongPress: () => _showOptionsDialog(context,chatID),
+                        onLongPress: () => _showOptionsDialog(context,chatID,nameText),
 
                       ),
                     ),
@@ -276,12 +276,11 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
               );
             },
           ),
-
         ],
       ),
     );
   }
-  void _showOptionsDialog(BuildContext context, String chatID) {
+  void _showOptionsDialog(BuildContext context, String chatID,String chatName) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -348,7 +347,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => IndReportPage(chatID: chatID),
+                      builder: (context) => IndReportPage(chatID: chatID,chatName: chatName),
                     ),
                   );
                 },

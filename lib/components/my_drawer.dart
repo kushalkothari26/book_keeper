@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:book_keeper/pages/settings_page.dart';
 import 'package:book_keeper/pages/account_page.dart';
 import 'package:book_keeper/pages/report_page.dart';
+import 'package:book_keeper/pages/about_page.dart';
 class MyDrawer extends StatelessWidget {
   MyDrawer({super.key});
   final user=FirebaseAuth.instance.currentUser;
@@ -25,12 +26,18 @@ class MyDrawer extends StatelessWidget {
                     onTap: (){
                       Navigator.pop(context);
                       Navigator.push(context,MaterialPageRoute(builder: (context)=>const AccountDetailsPage()));},
-                    child: Icon(Icons.account_circle,color: Theme.of(context).colorScheme.primary,size: 90,)),
+                    child: Column(
+                      children: [
+                        Icon(Icons.account_circle,color: Theme.of(context).colorScheme.primary,size: 90,),
+                        const SizedBox(height: 20,),
+                        const Text('Account Details')
+                      ],
+                    )),
               )),
               Padding(
                 padding: const EdgeInsets.only(left: 25),
                 child: ListTile(
-                  title: const Text("H O M E"),
+                  title: const Text("HOME"),
                   leading: const Icon(Icons.home),
                   onTap: (){
                     Navigator.pop(context);
@@ -40,7 +47,7 @@ class MyDrawer extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 25),
                 child: ListTile(
-                  title: const Text("S E T T I N G S"),
+                  title: const Text("SETTINGS"),
                   leading: const Icon(Icons.settings),
                   onTap: (){
                     Navigator.pop(context);
@@ -51,11 +58,22 @@ class MyDrawer extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 25),
                 child: ListTile(
-                  title: const Text("R E P O R T"),
-                  leading: const Icon(Icons.home),
+                  title: const Text("VIEW TRANSACTION REPORT"),
+                  leading: const Icon(Icons.list_alt_sharp),
                   onTap: (){
                     Navigator.pop(context);
-                    Navigator.push(context,MaterialPageRoute(builder: (context)=>ReportPage()));
+                    Navigator.push(context,MaterialPageRoute(builder: (context)=>const ReportPage()));
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: ListTile(
+                  title: const Text("ABOUT THE APP"),
+                  leading: const Icon(Icons.rule),
+                  onTap: (){
+                    Navigator.pop(context);
+                    Navigator.push(context,MaterialPageRoute(builder: (context)=>const AboutPage()));
                   },
                 ),
               ),

@@ -6,7 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
-
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:book_keeper/services/locnot_service.dart';
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin=FlutterLocalNotificationsPlugin();
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
 
@@ -27,6 +29,7 @@ class _ReportPageState extends State<ReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    LocalNotification.initialize(flutterLocalNotificationsPlugin);
     return Scaffold(
       appBar: AppBar(
         title: Text('Transaction Report',style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
@@ -142,6 +145,7 @@ class _ReportPageState extends State<ReportPage> {
                               setState(() {
                                 _messages = fetchedMessages;
                               });
+                              LocalNotification.showBigTextNotification(title: 'Notification', body: 'Report Generated Successfully', fln: flutterLocalNotificationsPlugin);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Please select both start and end dates.')),
@@ -153,7 +157,13 @@ class _ReportPageState extends State<ReportPage> {
                         const SizedBox(width: 10,),
                         ElevatedButton(
                           onPressed: () async {
-                            await _generateAndSavePDF(userDetails['name'],userDetails['businessname'],userDetails['address'],userDetails['phno']);
+                            if (_startDate != null && _endDate != null) {
+                              await _generateAndSavePDF(userDetails['name'],userDetails['businessname'],userDetails['address'],userDetails['phno']);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please select both start and end dates.')),
+                              );
+                            }
                           },
                           child: const Text('Download Report'),
                         ),
@@ -255,14 +265,14 @@ class _ReportPageState extends State<ReportPage> {
                       pw.Text('Credit'),
                     ]
                   ),
-                  ..._messages.map((message) {
-                    DateTime dt = (message['timestamp'] as Timestamp).toDate();
-                    bool isDebit = message['gave'];
-                    double amount = double.parse(message['amount']);
+                  ..._messages.map((transaction) {
+                    DateTime dt = (transaction['timestamp'] as Timestamp).toDate();
+                    bool isDebit = transaction['gave'];
+                    double amount = double.parse(transaction['amount']);
                     return pw.TableRow(
                       children: [
                         pw.Text('$dt'),
-                        pw.Text('${message['name']}'),
+                        pw.Text('${transaction['name']}'),
                         isDebit ? pw.Text('$amount'): pw.Text(''),
                         isDebit ? pw.Text('') : pw.Text('$amount'),
                       ],
@@ -282,10 +292,11 @@ class _ReportPageState extends State<ReportPage> {
     if (!outputDir.existsSync()) {
       outputDir.createSync(recursive: true);
     }
-
-    final file = File('${outputDir.path}/ledger_report.pdf');
+    String n='ledger_report_.pdf';
+    final file = File('${outputDir.path}/$n');
     await file.writeAsBytes(await pdf.save());
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF saved to Downloads folder.')));
+    LocalNotification.showBigTextNotification(title: 'Notification', body: 'PDF Downloaded', fln: flutterLocalNotificationsPlugin);
     // final output = await getTemporaryDirectory();
     // print(output.path);
     // final file = File('${output.path}/bank_statement.pdf');

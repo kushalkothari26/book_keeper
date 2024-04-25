@@ -12,7 +12,8 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin=FlutterLoc
 class IndReportPage extends StatefulWidget {
 
   final String chatID;
-  const IndReportPage({super.key,required this.chatID});
+  final String chatName;
+  const IndReportPage({super.key,required this.chatID,required this.chatName});
 
   @override
   State<IndReportPage> createState() => _IndReportPageState();
@@ -27,7 +28,7 @@ class _IndReportPageState extends State<IndReportPage> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  List<Map<String, dynamic>> _messages = [];
+  List<Map<String, dynamic>> _transactions = [];
 
   @override
   Widget build(BuildContext context) {
@@ -119,14 +120,14 @@ class _IndReportPageState extends State<IndReportPage> {
                           onPressed: () async {
                             if (_startDate != null && _endDate != null) {
                               setState(() {
-                                _messages = [];
+                                _transactions = [];
                               });
                               List<Map<String, dynamic>> fetchedMessages =
                               await _messageService.getTransactionsWithDate(widget.chatID,_startDate!, _endDate!);
                               setState(() {
-                                _messages = fetchedMessages;
+                                _transactions = fetchedMessages;
                               });
-
+                              LocalNotification.showBigTextNotification(title: 'Notification', body: 'Report Generated Successfully', fln: flutterLocalNotificationsPlugin);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Please select both start and end dates.')),
@@ -139,14 +140,13 @@ class _IndReportPageState extends State<IndReportPage> {
                         ElevatedButton(
                           onPressed: () async {
                             await _generateAndSavePDF(userDetails['name'],userDetails['businessname'],userDetails['address'],userDetails['phno']);
-                            LocalNotification.showBigTextNotification(title: 'PDF Downloaded', body: 'Saved in Downloads', fln: flutterLocalNotificationsPlugin);
                           },
                           child: const Text('Download Report'),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16.0),
-                    if (_messages.isNotEmpty)
+                    if (_transactions.isNotEmpty)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -170,7 +170,7 @@ class _IndReportPageState extends State<IndReportPage> {
                               ),
                             ),
                           ),
-
+                          Text('Business  Contact Name :${widget.chatName}'),
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: DataTable(
@@ -180,14 +180,14 @@ class _IndReportPageState extends State<IndReportPage> {
                                 DataColumn(label: Text('Debit')),
                                 DataColumn(label: Text('Credit')),
                               ],
-                              rows: _messages.map<DataRow>((message) {
-                                DateTime dt = (message['timestamp'] as Timestamp).toDate();
-                                bool isDebit = message['gave'];
-                                double amount = double.parse(message['amount']);
+                              rows: _transactions.map<DataRow>((transaction) {
+                                DateTime dt = (transaction['timestamp'] as Timestamp).toDate();
+                                bool isDebit = transaction['gave'];
+                                double amount = double.parse(transaction['amount']);
                                 return DataRow(
                                   cells: [
                                     DataCell(Text('$dt')),
-                                    DataCell(Text('${message['comment']}')),
+                                    DataCell(Text('${transaction['comment']}')),
                                     isDebit ? DataCell(Text('₹$amount')) : const DataCell(Text('')),
                                     isDebit ? const DataCell(Text('')) : DataCell(Text('₹$amount')),
                                   ],
@@ -231,25 +231,26 @@ class _IndReportPageState extends State<IndReportPage> {
               pw.Text('Address: $badd'),
               pw.Text('Statement:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16.0)),
               pw.SizedBox(height: 8.0),
+              pw.Text('Business  Contact Name :${widget.chatName}'),
               pw.Table(
                 border: const pw.TableBorder(),
                 children: [
                   pw.TableRow(
                       children: [
                         pw.Text('Date'),
-                        pw.Text('Name'),
+                        pw.Text('Description'),
                         pw.Text('Debit'),
                         pw.Text('Credit'),
                       ]
                   ),
-                  ..._messages.map((message) {
-                    DateTime dt = (message['timestamp'] as Timestamp).toDate();
-                    bool isDebit = message['gave'];
-                    double amount = double.parse(message['amount']);
+                  ..._transactions.map((transaction) {
+                    DateTime dt = (transaction['timestamp'] as Timestamp).toDate();
+                    bool isDebit = transaction['gave'];
+                    double amount = double.parse(transaction['amount']);
                     return pw.TableRow(
                       children: [
                         pw.Text('$dt'),
-                        pw.Text('${message['name']}'),
+                        pw.Text('${transaction['comment']}'),
                         isDebit ? pw.Text('$amount'): pw.Text(''),
                         isDebit ? pw.Text('') : pw.Text('$amount'),
                       ],
@@ -270,7 +271,7 @@ class _IndReportPageState extends State<IndReportPage> {
       outputDir.createSync(recursive: true);
     }
 
-    final file = File('${outputDir.path}/ledger_report.pdf');
+    final file = File('${outputDir.path}/ledger_report_${widget.chatName}.pdf');
     await file.writeAsBytes(await pdf.save());
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF saved to Downloads folder.')));
     LocalNotification.showBigTextNotification(title: 'PDF Downloaded', body: 'Tap to open it', fln: flutterLocalNotificationsPlugin);
@@ -284,9 +285,9 @@ class _IndReportPageState extends State<IndReportPage> {
 
   double _calculateTotalDebit() {
     double totalDebit = 0;
-    for (var message in _messages) {
-      if (message['gave']) {
-        totalDebit += double.parse(message['amount']);
+    for (var transaction in _transactions) {
+      if (transaction['gave']) {
+        totalDebit += double.parse(transaction['amount']);
       }
     }
     return totalDebit;
@@ -294,9 +295,9 @@ class _IndReportPageState extends State<IndReportPage> {
 
   double _calculateTotalCredit() {
     double totalCredit = 0;
-    for (var message in _messages) {
-      if (!message['gave']) {
-        totalCredit += double.parse(message['amount']);
+    for (var transaction in _transactions) {
+      if (!transaction['gave']) {
+        totalCredit += double.parse(transaction['amount']);
       }
     }
     return totalCredit;

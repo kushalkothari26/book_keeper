@@ -106,7 +106,7 @@ class _ChatPageState extends State<ChatPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      IndReportPage(chatID: widget.chatID),
+                                      IndReportPage(chatID: widget.chatID,chatName: widget.chatName,),
                                 ),
                               );
                             },
@@ -246,7 +246,7 @@ class _ChatPageState extends State<ChatPage> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text('No Reminder Needed'),
-                            content: const Text('The total given is not greater than the total received.'),
+                            content: const Text('You owe them and not the other way around.'),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
