@@ -150,7 +150,7 @@ class _IndReportPageState extends State<IndReportPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Ledger Report:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0)),
+                          const Text('Ledger Statements:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0)),
                           const SizedBox(height: 8.0),
                           const Text(
                             'Account Details:',
@@ -219,7 +219,7 @@ class _IndReportPageState extends State<IndReportPage> {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('Ledger Report:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18.0)),
+              pw.Text('Ledger Statements:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18.0)),
               pw.SizedBox(height: 8.0),
               pw.Text(
                 'Account Details:',
@@ -274,7 +274,7 @@ class _IndReportPageState extends State<IndReportPage> {
     final file = File('${outputDir.path}/ledger_report_${widget.chatName}.pdf');
     await file.writeAsBytes(await pdf.save());
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF saved to Downloads folder.')));
-    LocalNotification.showBigTextNotification(title: 'PDF Downloaded', body: 'Tap to open it', fln: flutterLocalNotificationsPlugin);
+    LocalNotification.showBigTextNotification(title: 'PDF Downloaded', body: 'Go to Downloads in File Manager', fln: flutterLocalNotificationsPlugin);
     // final output = await getTemporaryDirectory();
     // print(output.path);
     // final file = File('${output.path}/bank_statement.pdf');

@@ -10,6 +10,7 @@ class ChatPage extends StatefulWidget {
   final String chatID;
   final String chatName;
 
+
   const ChatPage({super.key, required this.chatID, required this.chatName});
 
   @override
@@ -21,8 +22,7 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController commentController = TextEditingController();
   final MessageService messageService = MessageService();
   final FirestoreService firestoreService=FirestoreService();
-  FocusNode myFocusNode = FocusNode();
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
   int totalGiven = 0;
   int totalReceived = 0;
   int balance = 0;
@@ -31,6 +31,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _loadBalance();
   }
 
@@ -70,7 +71,7 @@ class _ChatPageState extends State<ChatPage> {
                 widget.chatName,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onPrimary,
-                  fontSize: 25,
+                  fontSize: 22,
                 ),
               ),
             ],
@@ -80,7 +81,8 @@ class _ChatPageState extends State<ChatPage> {
             child: Column(
               children: [
                 Container(
-                  width: 325,
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(left:12,right: 12),
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(30),color: Theme.of(context).colorScheme.secondary,),
 
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -161,7 +163,13 @@ class _ChatPageState extends State<ChatPage> {
                       'timestamp': document['timestamp'],
                     });
                   });
-
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollController.animateTo(
+                      _scrollController.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  });
                   return ListView.builder(
                     controller: _scrollController,
                     itemCount: transactions.length,
@@ -223,7 +231,7 @@ class _ChatPageState extends State<ChatPage> {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: const Text('Phone Number Error!!!'),
-                              content: const Text('Please update the phone number in your details. Make sure the number starts with 91'),
+                              content: const Text('Please update the phone number in your details. Make sure the number starts with the country code 91'),
 
                               actions: <Widget>[
                                 TextButton(
@@ -241,7 +249,22 @@ class _ChatPageState extends State<ChatPage> {
                             ),
                           );
                         }
-                      } else {
+                      }else if(balance==0){
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('No Reminder Needed'),
+                            content: const Text('They don\'t owe you any money'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      else {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(

@@ -26,10 +26,10 @@ class DetailsService {
         return docSnapshot.data() as Map<String, dynamic>;
       } else {
         return {
-          'name': 'username',
+          'name': 'Edit Account Details',
           'phno': 1234567890,
-          'businessname': 'xyzbusiness',
-          'address': 'xyz',
+          'businessname': 'Edit Account Details',
+          'address': 'XYZ',
         };
       }
     } catch (e) {

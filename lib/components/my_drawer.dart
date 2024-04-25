@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:book_keeper/pages/settings_page.dart';
 import 'package:book_keeper/pages/account_page.dart';
-import 'package:book_keeper/pages/report_page.dart';
 import 'package:book_keeper/pages/about_page.dart';
 class MyDrawer extends StatelessWidget {
   MyDrawer({super.key});
@@ -52,17 +51,6 @@ class MyDrawer extends StatelessWidget {
                   onTap: (){
                     Navigator.pop(context);
                     Navigator.push(context,MaterialPageRoute(builder: (context)=>const SettingsPage()));
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: ListTile(
-                  title: const Text("VIEW TRANSACTION REPORT"),
-                  leading: const Icon(Icons.list_alt_sharp),
-                  onTap: (){
-                    Navigator.pop(context);
-                    Navigator.push(context,MaterialPageRoute(builder: (context)=>const ReportPage()));
                   },
                 ),
               ),

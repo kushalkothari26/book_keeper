@@ -8,13 +8,13 @@ class MyTextField extends StatelessWidget {
   final Color? textColor;
 
   const MyTextField({
-    Key? key,
+    super.key,
     required this.hintText,
     required this.obscureText,
     required this.controller,
     this.backgroundColor,
     this.textColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

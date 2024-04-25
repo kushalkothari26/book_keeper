@@ -8,7 +8,7 @@ import 'package:book_keeper/pages/forgot.dart';
 import 'package:book_keeper/pages/signup.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({super.key});
 
   @override
   State<Login> createState() => _LoginState();
@@ -138,8 +138,13 @@ class _LoginState extends State<Login> {
             const Text('--------------------------------or-------------------------------------'),
             ElevatedButton(
               onPressed: login,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                  Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -149,11 +154,6 @@ class _LoginState extends State<Login> {
                       style: TextStyle(fontSize: 20),
                     ),
                   ],
-                ),
-              ),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
-                  Theme.of(context).colorScheme.secondary,
                 ),
               ),
             ),

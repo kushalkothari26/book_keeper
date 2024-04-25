@@ -1,4 +1,5 @@
 import 'package:book_keeper/pages/ind_report_page.dart';
+import 'package:book_keeper/pages/report_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:book_keeper/services/message_service.dart';
 import 'package:flutter/material.dart';
@@ -96,12 +97,20 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Edit Name'),
+          title: const Text('Edit'),
           content: Column(
             children: [
-              TextField(obscureText: false, controller: textController),
+              TextField(
+                obscureText: false,
+                controller: textController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
               const SizedBox(height: 10,),
-              TextField(obscureText: false, controller: numberController),
+              TextField(
+                obscureText: false,
+                controller: numberController,
+                decoration: const InputDecoration(labelText: 'Phone Number'),
+              ),
             ],
           ),
           actions: [
@@ -139,142 +148,163 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
         ),
       ),
       drawer: MyDrawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: newNameBox,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.add),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 70.0),
+        child: FloatingActionButton(
+          onPressed: newNameBox,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          child: const Icon(Icons.add),
+        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+
+      body: Column(
         children: [
-          // Customer tab
-          StreamBuilder<QuerySnapshot>(
-            stream: firestoreService.getCustomerNamesStream(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Customer tab
+                StreamBuilder<QuerySnapshot>(
+                  stream: firestoreService.getCustomerNamesStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
 
-              List namesList = snapshot.data!.docs;
+                    List namesList = snapshot.data!.docs;
 
-              return ListView.builder(
-                itemCount: namesList.length,
-                itemBuilder: (context, index) {
-                  DocumentSnapshot document = namesList[index];
-                  String chatID = document.id;
+                    return ListView.builder(
+                      itemCount: namesList.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot document = namesList[index];
+                        String chatID = document.id;
 
-                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                  String nameText = data['chatName'];
-                  int balance=data['balance'];
-                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
-                  Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                    ),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                      ),
-                      color: Theme.of(context).colorScheme.surface,
-                      child: ListTile(
-                        title: Text(
-                          nameText,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
-                            Text('${balance.abs()}',style: TextStyle(color: balanceColor,fontSize: 15,fontWeight: FontWeight.bold),)
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatPage(chatID: chatID, chatName: nameText),
+                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                        String nameText = data['chatName'];
+                        int balance=data['balance'];
+                        String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
+                        Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10.0,
+                          ),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: BorderSide(color: Theme.of(context).colorScheme.primary),
                             ),
-                          );
-                        },
-                        onLongPress: () => _showOptionsDialog(context,chatID,nameText),
+                            color: Theme.of(context).colorScheme.surface,
+                            child: ListTile(
+                              title: Text(
+                                nameText,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
+                                  Text('${balance.abs()}',style: TextStyle(color: balanceColor,fontSize: 15,fontWeight: FontWeight.bold),)
+                                ],
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatPage(chatID: chatID, chatName: nameText),
+                                  ),
+                                );
+                              },
+                              onLongPress: () => _showOptionsDialog(context,chatID,nameText),
 
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+
+                // Supplier tab
+                StreamBuilder<QuerySnapshot>(
+                  stream: firestoreService.getSupplierNamesStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+
+                    List namesList = snapshot.data!.docs;
+
+                    return ListView.builder(
+                      itemCount: namesList.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot document = namesList[index];
+                        String chatID = document.id;
+
+                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                        String nameText = data['chatName'];
+                        int balance=data['balance'];
+                        String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
+                        Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10.0,
+                          ),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                            ),
+                            color: Theme.of(context).colorScheme.surface,
+                            child: ListTile(
+                              title: Text(
+                                nameText,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
+                                  Text('${balance.abs()}',style: TextStyle(color: balanceColor,fontSize: 15,fontWeight: FontWeight.bold),)
+                                ],
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatPage(chatID: chatID, chatName: nameText),
+                                  ),
+                                );
+                              },
+                              onLongPress: () => _showOptionsDialog(context,chatID,nameText),
+
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-
-          // Supplier tab
-          StreamBuilder<QuerySnapshot>(
-            stream: firestoreService.getSupplierNamesStream(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-
-              List namesList = snapshot.data!.docs;
-
-              return ListView.builder(
-                itemCount: namesList.length,
-                itemBuilder: (context, index) {
-                  DocumentSnapshot document = namesList[index];
-                  String chatID = document.id;
-
-                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                  String nameText = data['chatName'];
-                  int balance=data['balance'];
-                  String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
-                  Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                    ),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                      ),
-                      color: Theme.of(context).colorScheme.surface,
-                      child: ListTile(
-                        title: Text(
-                          nameText,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(balanceText,style: TextStyle(color: balanceColor,fontSize: 13),),
-                            Text('${balance.abs()}',style: TextStyle(color: balanceColor,fontSize: 15,fontWeight: FontWeight.bold),)
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatPage(chatID: chatID, chatName: nameText),
-                            ),
-                          );
-                        },
-                        onLongPress: () => _showOptionsDialog(context,chatID,nameText),
-
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            color: Theme.of(context).colorScheme.primary,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(context,MaterialPageRoute(builder: (context)=>const ReportPage()));
+              },
+              child: const Text('View Transaction Statements'),
+            ),
           ),
         ],
       ),
