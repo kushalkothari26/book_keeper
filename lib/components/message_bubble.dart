@@ -1,3 +1,4 @@
+import 'package:book_keeper/components/my_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:book_keeper/services/message_service.dart';
@@ -168,15 +169,21 @@ class MessageBubble extends StatelessWidget {
       builder: (context) => AlertDialog(
         title: const Text('Updated Amount'),
         content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
+            MyTextField(
               controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Amount'),
+              input: TextInputType.number,
+              hintText:'Amount',
+              obscureText:false
             ),
-            TextField(
+            const SizedBox(height: 10,),
+            MyTextField(
+              hintText: 'Comment',
+              obscureText: false,
+              input: TextInputType.text,
               controller: _commentController,
-              decoration: const InputDecoration(labelText: 'Comment'),
             ),
           ],
         ),

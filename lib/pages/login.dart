@@ -85,11 +85,13 @@ class _LoginState extends State<Login> {
               hintText: 'Enter Email',
               obscureText: false,
               controller: email,
+              input: TextInputType.text,
               backgroundColor: Theme.of(context).colorScheme.surface,
               textColor: Theme.of(context).colorScheme.onSurface,
             ),
             const SizedBox(height: 10),
             MyTextField(
+              input: TextInputType.text,
               hintText: 'Enter Password',
               obscureText: true,
               controller: password,

@@ -1,3 +1,4 @@
+import 'package:book_keeper/components/my_textfield.dart';
 import 'package:book_keeper/pages/ind_report_page.dart';
 import 'package:book_keeper/services/whatsapp_service.dart';
 import 'package:flutter/material.dart';
@@ -304,14 +305,18 @@ class _ChatPageState extends State<ChatPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
+            MyTextField(
+              hintText: 'Amount',
               controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Amount'),
+              obscureText: false,
+              input: TextInputType.number,
             ),
-            TextField(
+            const SizedBox(height: 10,),
+            MyTextField(
+              hintText: 'Comment',
+              obscureText: false,
+              input: TextInputType.text,
               controller: commentController,
-              decoration: const InputDecoration(labelText: 'Add a Comment'),
             )
           ],
         ),
@@ -353,21 +358,21 @@ class _ChatPageState extends State<ChatPage> {
 
 
   void _showUpdatePhoneNumberDialog() {
-    String newPhoneNumber = '';
+    final TextEditingController numberController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Update Phone Number'),
-        content: TextField(
-          onChanged: (value) => newPhoneNumber = value,
-          decoration: const InputDecoration(
-            hintText: 'Enter new phone number with 91 in front',
-          ),
+        content: MyTextField(
+          controller: numberController,
+          hintText: 'Enter new phone number with 91 in front',
+          obscureText: false,
+          input: TextInputType.text,
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              await firestoreService.updatePhoneNumber(widget.chatID, newPhoneNumber);
+              await firestoreService.updatePhoneNumber(widget.chatID, numberController.text);
               Navigator.pop(context);
             },
             child: const Text('Update'),

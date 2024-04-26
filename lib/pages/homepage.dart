@@ -1,5 +1,6 @@
 import 'package:book_keeper/pages/ind_report_page.dart';
 import 'package:book_keeper/pages/report_page.dart';
+import 'package:book_keeper/services/pushnot_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:book_keeper/services/message_service.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
   final MessageService messageService=MessageService();
   final TextEditingController textController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
+
   int _selectedValue = 1;
   late TabController _tabController;
 
@@ -44,10 +46,12 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
         builder: (context) => AlertDialog(
           title: const Text('New Contact'),
           content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MyTextField(hintText: 'Enter Name', obscureText: false, controller: textController),
+              MyTextField(hintText: 'Enter Name', obscureText: false, controller: textController,input: TextInputType.text,),
               const SizedBox(height: 10,),
-              MyTextField(hintText: 'Enter Phone Number', obscureText: false, controller: numberController),
+              MyTextField(hintText: 'Enter Phone Number', obscureText: false, controller: numberController,input: TextInputType.text,),
               RadioListTile(
                 title: const Text('Customer'),
                 value: 1,
@@ -99,17 +103,21 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
         builder: (context) => AlertDialog(
           title: const Text('Edit'),
           content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
+              MyTextField(
+                input: TextInputType.text,
+                hintText: 'Name',
                 obscureText: false,
                 controller: textController,
-                decoration: const InputDecoration(labelText: 'Name'),
               ),
               const SizedBox(height: 10,),
-              TextField(
+              MyTextField(
+                input: TextInputType.text,
+                hintText: 'Phone Number',
                 obscureText: false,
                 controller: numberController,
-                decoration: const InputDecoration(labelText: 'Phone Number'),
               ),
             ],
           ),

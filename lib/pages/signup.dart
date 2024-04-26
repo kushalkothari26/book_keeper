@@ -41,9 +41,9 @@ class _SignupState extends State<Signup> {
               fontSize: 16,
             ),),
             const SizedBox(height: 50,),
-            MyTextField(hintText: 'Enter Email', obscureText: false, controller:email),
+            MyTextField(hintText: 'Enter Email', obscureText: false, controller:email,input: TextInputType.text,),
             const SizedBox(height: 10,),
-            MyTextField(hintText: 'Enter Password', obscureText: true, controller:password),
+            MyTextField(hintText: 'Enter Password', obscureText: true, controller:password,input: TextInputType.text,),
             MyButton(text: 'Sign Up', onTap:()=>signup() )
 
           ],

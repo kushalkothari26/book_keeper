@@ -38,7 +38,7 @@ class _ForgotState extends State<Forgot> {
               fontSize: 16,
             ),),
             const SizedBox(height: 20,),
-            MyTextField(hintText: 'Enter Email', obscureText: false, controller:email),
+            MyTextField(hintText: 'Enter Email', obscureText: false, controller:email,input: TextInputType.text,),
             MyButton(text: 'Send Link', onTap: ()=>reset())
           ],
         ),
