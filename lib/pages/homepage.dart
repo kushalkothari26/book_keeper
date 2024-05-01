@@ -1,6 +1,5 @@
 import 'package:book_keeper/pages/ind_report_page.dart';
 import 'package:book_keeper/pages/report_page.dart';
-import 'package:book_keeper/services/pushnot_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:book_keeper/services/message_service.dart';
 import 'package:flutter/material.dart';
@@ -193,7 +192,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
 
                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                         String nameText = data['chatName'];
-                        int balance=data['balance'];
+                        double balance=data['balance'];
                         String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
                         Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
                         return Padding(
@@ -258,7 +257,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
 
                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                         String nameText = data['chatName'];
-                        int balance=data['balance'];
+                        double balance=data['balance'];
                         String balanceText = balance==0 ? 'Settled up' : balance > 0 ? 'You Owe:' : 'Owes you:';
                         Color balanceColor = balance==0 ?Theme.of(context).colorScheme.onSurface : balance > 0 ? Colors.green : Colors.red;
                         return Padding(

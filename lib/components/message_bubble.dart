@@ -1,4 +1,5 @@
 import 'package:book_keeper/components/my_textfield.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:book_keeper/services/message_service.dart';
@@ -101,6 +102,7 @@ class MessageBubble extends StatelessWidget {
             children: <Widget>[
               GestureDetector(
                 onTap: () {
+                  Navigator.pop(context);
                   _showAmountDialog(context,amount,comment);
                 },
                 child: Container(
@@ -122,19 +124,19 @@ class MessageBubble extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () async{
-                  int currentAmount = int.tryParse(amount) ?? 0;
-                  int totalGiven = await firestoreService.getTotalGiven(docID);
-                  int totalReceived=await firestoreService.getTotalReceived(docID);
+                  double currentAmount = double.tryParse(amount) ?? 0;
+                  double totalGiven = await firestoreService.getTotalGiven(docID);
+                  double totalReceived=await firestoreService.getTotalReceived(docID);
                   if (gave) {
                     totalGiven=totalGiven-currentAmount;
-                    int balance=totalReceived - totalGiven;
+                    double balance=totalReceived - totalGiven;
                     await firestoreService.updateTotalGiven(docID, totalGiven);
                     await firestoreService.updateBalance(docID, balance);
                     update();
 
                   } else {
                     totalReceived=totalReceived-currentAmount;
-                    int balance=totalReceived - totalGiven;
+                    double balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
                     await firestoreService.updateTotalReceived(docID, totalReceived);
                     await firestoreService.updateBalance(docID, balance);
                     update();
@@ -190,22 +192,22 @@ class MessageBubble extends StatelessWidget {
         actions: <Widget>[
           ElevatedButton(
             onPressed: () async{
-              int totalGiven = await firestoreService.getTotalGiven(docID);
-              int totalReceived=await firestoreService.getTotalReceived(docID);
-              int newAmount = int.tryParse(_amountController.text) ?? 0;
-              int oldAmount = int.tryParse(amount) ?? 0;
-              int diff = newAmount - oldAmount;
-              int balance=0;
+              double totalGiven = await firestoreService.getTotalGiven(docID);
+              double totalReceived=await firestoreService.getTotalReceived(docID);
+              double newAmount = double.tryParse(_amountController.text) ?? 0;
+              double oldAmount = double.tryParse(amount) ?? 0;
+              double diff = newAmount - oldAmount;
+              double balance=0;
               if (gave) {
                 totalGiven=totalGiven+diff;
-                balance=totalReceived - totalGiven;
+                balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
                 await firestoreService.updateTotalGiven(docID, totalGiven);
                 await firestoreService.updateBalance(docID, balance);
                 update();
 
               } else {
                 totalReceived=totalReceived+diff;
-                balance=totalReceived - totalGiven;
+                balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
                 await firestoreService.updateTotalReceived(docID, totalReceived);
                 await firestoreService.updateBalance(docID, balance);
                 update();

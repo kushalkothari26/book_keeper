@@ -14,9 +14,9 @@ class FirestoreService {
         'chatName': chatName,
         'type': type,
         'phoneNumber': phoneNumber,
-        'totalGiven':0,
-        'totalReceived':0,
-        'balance':0,
+        'totalGiven':0.0,
+        'totalReceived':0.0,
+        'balance':0.0,
         'timestamp': Timestamp.now(),
       });
     } else {
@@ -54,25 +54,25 @@ class FirestoreService {
   }
 
   // operations for given, received and balance
-  Future<int> getTotalGiven(String chatID) async {
+  Future<double> getTotalGiven(String chatID) async {
     DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['totalGiven'] ?? 0;
   }
-  Future<int> getTotalReceived(String chatID) async {
+  Future<double> getTotalReceived(String chatID) async {
     DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['totalReceived'] ?? 0;
   }
-  Future<int> getBalance(String chatID) async {
+  Future<double> getBalance(String chatID) async {
     DocumentSnapshot snapshot = await chats.doc(chatID).get();
     return snapshot['balance'] ?? 0;
   }
-  Future<void> updateTotalGiven(String chatID, int newGiven) {
+  Future<void> updateTotalGiven(String chatID, double newGiven) {
     return chats.doc(chatID).update({'totalGiven': newGiven});
   }
-  Future<void> updateTotalReceived(String chatID, int newReceived) {
+  Future<void> updateTotalReceived(String chatID, double newReceived) {
     return chats.doc(chatID).update({'totalReceived': newReceived});
   }
-  Future<void> updateBalance(String chatID, int newBalance) {
+  Future<void> updateBalance(String chatID, double newBalance) {
     return chats.doc(chatID).update({'balance': newBalance});
   }
 

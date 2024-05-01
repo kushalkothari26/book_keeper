@@ -1,6 +1,7 @@
 import 'package:book_keeper/components/my_textfield.dart';
 import 'package:book_keeper/pages/ind_report_page.dart';
 import 'package:book_keeper/services/whatsapp_service.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:book_keeper/components/message_bubble.dart';
 import 'package:book_keeper/services/message_service.dart';
@@ -10,8 +11,6 @@ import 'package:book_keeper/services/firestore.dart';
 class ChatPage extends StatefulWidget {
   final String chatID;
   final String chatName;
-
-
   const ChatPage({super.key, required this.chatID, required this.chatName});
 
   @override
@@ -24,9 +23,9 @@ class _ChatPageState extends State<ChatPage> {
   final MessageService messageService = MessageService();
   final FirestoreService firestoreService=FirestoreService();
   late ScrollController _scrollController;
-  int totalGiven = 0;
-  int totalReceived = 0;
-  int balance = 0;
+  double totalGiven = 0;
+  double totalReceived = 0;
+  double balance = 0;
   int type=0;
 
   @override
@@ -36,7 +35,7 @@ class _ChatPageState extends State<ChatPage> {
     _loadBalance();
   }
 
-  void update(int newBalance,int newTotalGiven,int newTotalReceived) {
+  void update(double newBalance,double newTotalGiven,double newTotalReceived) {
     setState(() {
       balance = newBalance;
       totalGiven=newTotalGiven;
@@ -45,9 +44,9 @@ class _ChatPageState extends State<ChatPage> {
   }
   Future<void> _loadBalance() async {
     try {
-      int fetchTotalGiven = await firestoreService.getTotalGiven(widget.chatID);
-      int fetchTotalReceived=await firestoreService.getTotalReceived(widget.chatID);
-      int fetchedBalance=await firestoreService.getBalance(widget.chatID);
+      double fetchTotalGiven = await firestoreService.getTotalGiven(widget.chatID);
+      double fetchTotalReceived=await firestoreService.getTotalReceived(widget.chatID);
+      double fetchedBalance=await firestoreService.getBalance(widget.chatID);
       int fetchType=await firestoreService.getType(widget.chatID);
       setState(() {
         totalGiven = fetchTotalGiven;
@@ -63,7 +62,6 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     String balanceText = balance >= 0 ? 'You Owe: $balance' : 'Owes you: ${balance.abs()}';
-
     return Scaffold(
         appBar:AppBar(
           title: Row(
@@ -295,12 +293,11 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Future<void> _showAmountDialog(bool isRight) async {
-
+  Future<void> _showAmountDialog(bool gave) async {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isRight ? 'Enter Amount You Gave' : 'Enter Amount You Received'),
+        title: Text(gave ? 'Enter Amount You Gave' : 'Enter Amount You Received'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,17 +320,19 @@ class _ChatPageState extends State<ChatPage> {
         actions: <Widget>[
           ElevatedButton(
             onPressed: () {
-              int amount = int.tryParse(_amountController.text) ?? 0;
-              if (isRight) {
-                totalGiven += amount;
-                balance = totalReceived - totalGiven;
-                _updateBalance();
+              Decimal amount = Decimal.tryParse(_amountController.text) ?? Decimal.zero;
+              print(amount);
+              if (gave) {
+                totalGiven += amount.toDouble();
+                print(totalGiven);
               } else {
-                totalReceived += amount;
-                balance = totalReceived - totalGiven;
-                _updateBalance();
+                totalReceived += amount.toDouble();
+                print(totalReceived);
               }
-              messageService.addTransaction(widget.chatID, amount.toString(), commentController.text, isRight,type,widget.chatName);
+              balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
+              print(balance);
+              _updateBalance();
+              messageService.addTransaction(widget.chatID, amount.toString(), commentController.text, gave,type,widget.chatName);
               _amountController.clear();
               commentController.clear();
               Navigator.of(context).pop();
