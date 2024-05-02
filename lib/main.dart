@@ -7,6 +7,7 @@ import 'package:book_keeper/wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:book_keeper/firebase_options.dart';
 void main() async{
+  /*firebase Initialization*/
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(ChangeNotifierProvider(create: (context)=>ThemeProvider(),child: const MyApp()));
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
+    /*for push notifications*/
     FirebaseMessaging PushNotificationService = FirebaseMessaging.instance;
     PushNotificationService.getToken().then((token) {
       print("FCM Token: $token");

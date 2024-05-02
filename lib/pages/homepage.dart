@@ -1,3 +1,4 @@
+/* this screen is the home page with two tabs: customers and Suppliers*/
 import 'package:book_keeper/pages/ind_report_page.dart';
 import 'package:book_keeper/pages/report_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -37,6 +38,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
   }
 
   void newNameBox({String? chatID,String? cn,String? cphno}) {
+    /*Dialog box to either add new Contacts or to edit the existing ones*/
     if (chatID == null) {
       textController.clear();
       numberController.clear();
@@ -141,7 +143,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Your Ledger",style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
+        title: Text("Ledger",style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),),
         backgroundColor: Theme.of(context).colorScheme.primary, // Use primary color from theme
         bottom: TabBar(
           controller: _tabController,
@@ -318,6 +320,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
     );
   }
   void _showOptionsDialog(BuildContext context, String chatID,String chatName) {
+    /*dialog box to show the update and delete options for the contacts*/
     showDialog(
       context: context,
       builder: (context) => Dialog(

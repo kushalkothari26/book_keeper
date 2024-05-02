@@ -1,3 +1,4 @@
+/* this screen represents the chat of each and every contact*/
 import 'package:book_keeper/components/my_textfield.dart';
 import 'package:book_keeper/pages/ind_report_page.dart';
 import 'package:book_keeper/services/whatsapp_service.dart';
@@ -174,7 +175,7 @@ class _ChatPageState extends State<ChatPage> {
                     itemCount: transactions.length,
                     itemBuilder: (context, index) {
                       return MessageBubble(
-                        docID: widget.chatID,
+                        chatID: widget.chatID,
                         transactionID: transactions[index]['transactionID'],
                         amount: transactions[index]['amount'],
                         comment: transactions[index]['comment'],
@@ -321,16 +322,12 @@ class _ChatPageState extends State<ChatPage> {
           ElevatedButton(
             onPressed: () {
               Decimal amount = Decimal.tryParse(_amountController.text) ?? Decimal.zero;
-              print(amount);
               if (gave) {
                 totalGiven += amount.toDouble();
-                print(totalGiven);
               } else {
                 totalReceived += amount.toDouble();
-                print(totalReceived);
               }
               balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
-              print(balance);
               _updateBalance();
               messageService.addTransaction(widget.chatID, amount.toString(), commentController.text, gave,type,widget.chatName);
               _amountController.clear();
@@ -347,7 +344,8 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _updateBalance() async {
     await firestoreService.updateTotalReceived(widget.chatID, totalReceived);
     await firestoreService.updateTotalGiven(widget.chatID, totalGiven);
-    await firestoreService.updateBalance(widget.chatID, balance);
+    await firestoreService.updateBalance(widget.chatID, double.parse(balance.toStringAsFixed(2)));
+    FirestoreService().updateChatTimestamp(widget.chatID);
     setState(() {
       balance=balance;
       totalReceived=totalReceived;

@@ -17,7 +17,7 @@ class ReportPage extends StatefulWidget {
 }
 
 class _ReportPageState extends State<ReportPage> {
-  final DetailsService _detailsService = DetailsService();
+  final DetailsService detailService = DetailsService();
   final MessageService _messageService = MessageService();
   final user = FirebaseAuth.instance.currentUser;
 
@@ -37,7 +37,7 @@ class _ReportPageState extends State<ReportPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<Map<String, dynamic>>(
-          future: _detailsService.getDetails(user!.uid),
+          future: detailService.getDetails(user!.uid),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator();
@@ -234,8 +234,8 @@ class _ReportPageState extends State<ReportPage> {
   }
   Future<void> _generateAndSavePDF(String name,String bname,String badd,int phno) async {
     final pdf = pw.Document();
-    final DetailsService _detailsService = DetailsService();
-    _detailsService.getDetails(user!.uid);
+    final DetailsService detailService = DetailsService();
+    detailService.getDetails(user!.uid);
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {

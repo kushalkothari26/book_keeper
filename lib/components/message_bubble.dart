@@ -1,3 +1,4 @@
+/*this is to load the transactions in the chat*/
 import 'package:book_keeper/components/my_textfield.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ class MessageBubble extends StatelessWidget {
   final String comment;
   final bool gave;
   final DateTime timestamp;
-  final String docID;
+  final String chatID;
   final String transactionID;
   final Function() update;
 
@@ -19,7 +20,7 @@ class MessageBubble extends StatelessWidget {
     required this.amount,
     required this.gave,
     required this.timestamp,
-    required this.docID,
+    required this.chatID,
     required this.transactionID,
     required this.comment,
     required this.update
@@ -36,6 +37,7 @@ class MessageBubble extends StatelessWidget {
           gave ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         GestureDetector(
+          onTap: () => _showOptionsDialog(context),
           onLongPress: () => _showOptionsDialog(context),
           child: Card(
             elevation: 4,
@@ -88,6 +90,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   void _showOptionsDialog(BuildContext context) {
+    /*Dialog box to show update and delete options*/
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -125,23 +128,20 @@ class MessageBubble extends StatelessWidget {
               GestureDetector(
                 onTap: () async{
                   double currentAmount = double.tryParse(amount) ?? 0;
-                  double totalGiven = await firestoreService.getTotalGiven(docID);
-                  double totalReceived=await firestoreService.getTotalReceived(docID);
+                  double totalGiven = await firestoreService.getTotalGiven(chatID);
+                  double totalReceived=await firestoreService.getTotalReceived(chatID);
                   if (gave) {
-                    totalGiven=totalGiven-currentAmount;
-                    double balance=totalReceived - totalGiven;
-                    await firestoreService.updateTotalGiven(docID, totalGiven);
-                    await firestoreService.updateBalance(docID, balance);
-                    update();
-
+                    totalGiven=(Decimal.parse(totalGiven.toString()) - Decimal.parse(currentAmount.toString())).toDouble();
                   } else {
-                    totalReceived=totalReceived-currentAmount;
-                    double balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
-                    await firestoreService.updateTotalReceived(docID, totalReceived);
-                    await firestoreService.updateBalance(docID, balance);
-                    update();
+                    totalReceived=(Decimal.parse(totalReceived.toString()) - Decimal.parse(currentAmount.toString())).toDouble();
                   }
+                  double balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
+                  await firestoreService.updateTotalGiven(chatID, totalGiven);
+                  await firestoreService.updateTotalReceived(chatID, totalReceived);
+                  await firestoreService.updateBalance(chatID, double.parse(balance.toStringAsFixed(2)));
+                  update();
                   MessageService().deleteTransaction(transactionID);
+                  FirestoreService().updateChatTimestamp(chatID);
                   Navigator.pop(context);
                 },
                 child: Container(
@@ -164,6 +164,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Future<void> _showAmountDialog(BuildContext context,String initialAmount,String initialComment) async {
+    /*dialog box to take the new amount and new comment of the transaction*/
     _amountController.text = initialAmount;
     _commentController.text=initialComment;
     return showDialog(
@@ -192,28 +193,24 @@ class MessageBubble extends StatelessWidget {
         actions: <Widget>[
           ElevatedButton(
             onPressed: () async{
-              double totalGiven = await firestoreService.getTotalGiven(docID);
-              double totalReceived=await firestoreService.getTotalReceived(docID);
+              double totalGiven = await firestoreService.getTotalGiven(chatID);
+              double totalReceived=await firestoreService.getTotalReceived(chatID);
               double newAmount = double.tryParse(_amountController.text) ?? 0;
               double oldAmount = double.tryParse(amount) ?? 0;
-              double diff = newAmount - oldAmount;
+              double diff =(Decimal.parse(newAmount.toString()) - Decimal.parse(oldAmount.toString())).toDouble();
               double balance=0;
               if (gave) {
-                totalGiven=totalGiven+diff;
-                balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
-                await firestoreService.updateTotalGiven(docID, totalGiven);
-                await firestoreService.updateBalance(docID, balance);
-                update();
-
+                totalGiven=(Decimal.parse(totalGiven.toString()) + Decimal.parse(diff.toString())).toDouble();
               } else {
-                totalReceived=totalReceived+diff;
-                balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
-                await firestoreService.updateTotalReceived(docID, totalReceived);
-                await firestoreService.updateBalance(docID, balance);
-                update();
+                totalReceived=(Decimal.parse(totalReceived.toString()) + Decimal.parse(diff.toString())).toDouble();
               }
-              MessageService()
-                  .updateTransaction(transactionID, _amountController.text,_commentController.text);
+              balance = (Decimal.parse(totalReceived.toString()) - Decimal.parse(totalGiven.toString())).toDouble();
+              await firestoreService.updateTotalGiven(chatID, totalGiven);
+              await firestoreService.updateTotalReceived(chatID, totalReceived);
+              await firestoreService.updateBalance(chatID, double.parse(balance.toStringAsFixed(2)));
+              update();
+              FirestoreService().updateChatTimestamp(chatID);
+              MessageService().updateTransaction(transactionID, _amountController.text,_commentController.text);
               _amountController.clear();
               _commentController.clear();
 
