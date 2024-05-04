@@ -243,7 +243,7 @@ class _ChatPageState extends State<ChatPage> {
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
-                                  child: const Text('OK'),
+                                  child: const Text('Cancel'),
                                 ),
                               ],
                             ),
@@ -319,6 +319,14 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
         actions: <Widget>[
+          ElevatedButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              _amountController.clear();
+              commentController.clear();
+              Navigator.of(context).pop();
+            },
+          ),
           ElevatedButton(
             onPressed: () {
               Decimal amount = Decimal.tryParse(_amountController.text) ?? Decimal.zero;

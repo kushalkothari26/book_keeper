@@ -192,6 +192,14 @@ class MessageBubble extends StatelessWidget {
         ),
         actions: <Widget>[
           ElevatedButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              _amountController.clear();
+              _commentController.clear();
+              Navigator.of(context).pop();
+            },
+          ),
+          ElevatedButton(
             onPressed: () async{
               double totalGiven = await firestoreService.getTotalGiven(chatID);
               double totalReceived=await firestoreService.getTotalReceived(chatID);

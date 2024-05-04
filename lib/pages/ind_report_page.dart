@@ -1,11 +1,11 @@
 import 'dart:io';
-
 import 'package:book_keeper/services/details_service.dart';
 import 'package:book_keeper/services/message_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:book_keeper/services/locnot_service.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin=FlutterLocalNotificationsPlugin();
@@ -182,11 +182,12 @@ class _IndReportPageState extends State<IndReportPage> {
                               ],
                               rows: _transactions.map<DataRow>((transaction) {
                                 DateTime dt = (transaction['timestamp'] as Timestamp).toDate();
+                                String formattedDate = DateFormat("d MMMM''yy hh:mm a").format(dt);
                                 bool isDebit = transaction['gave'];
                                 double amount = double.parse(transaction['amount']);
                                 return DataRow(
                                   cells: [
-                                    DataCell(Text('$dt')),
+                                    DataCell(Text(formattedDate)),
                                     DataCell(Text('${transaction['comment']}')),
                                     isDebit ? DataCell(Text('₹$amount')) : const DataCell(Text('')),
                                     isDebit ? const DataCell(Text('')) : DataCell(Text('₹$amount')),
@@ -245,11 +246,13 @@ class _IndReportPageState extends State<IndReportPage> {
                   ),
                   ..._transactions.map((transaction) {
                     DateTime dt = (transaction['timestamp'] as Timestamp).toDate();
+                    String formattedDate =
+                    DateFormat("d MMMM''yy hh:mm a").format(dt);
                     bool isDebit = transaction['gave'];
                     double amount = double.parse(transaction['amount']);
                     return pw.TableRow(
                       children: [
-                        pw.Text('$dt'),
+                        pw.Text(formattedDate),
                         pw.Text('${transaction['comment']}'),
                         isDebit ? pw.Text('$amount'): pw.Text(''),
                         isDebit ? pw.Text('') : pw.Text('$amount'),

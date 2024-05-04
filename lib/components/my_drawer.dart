@@ -1,3 +1,4 @@
+import 'package:book_keeper/pages/task_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -62,6 +63,17 @@ class MyDrawer extends StatelessWidget {
                   onTap: (){
                     Navigator.pop(context);
                     Navigator.push(context,MaterialPageRoute(builder: (context)=>const AboutPage()));
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 25),
+                child: ListTile(
+                  title: const Text("TASKS"),
+                  leading: const Icon(Icons.rule),
+                  onTap: (){
+                    Navigator.pop(context);
+                    Navigator.push(context,MaterialPageRoute(builder: (context)=>const TaskList()));
                   },
                 ),
               ),

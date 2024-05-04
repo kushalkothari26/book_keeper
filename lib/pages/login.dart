@@ -28,8 +28,14 @@ class _LoginState extends State<Login> {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email.text, password: password.text);
     } on FirebaseAuthException catch (e) {
       Get.snackbar("error msg", e.code);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error $e')),
+      );
     } catch (e) {
       Get.snackbar("error msg", e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error $e')),
+      );
     }
     setState(() {
       isloading = false;

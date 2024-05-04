@@ -52,7 +52,7 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
             children: [
               MyTextField(hintText: 'Enter Name', obscureText: false, controller: textController,input: TextInputType.text,),
               const SizedBox(height: 10,),
-              MyTextField(hintText: 'Enter Phone Number', obscureText: false, controller: numberController,input: TextInputType.text,),
+              MyTextField(hintText: 'Enter Phone Number', obscureText: false, controller: numberController,input: TextInputType.number,),
               RadioListTile(
                 title: const Text('Customer'),
                 value: 1,
@@ -81,16 +81,40 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
           ),
           actions: [
             ElevatedButton(
+              child: const Text('Cancel'),
               onPressed: () {
-                if (chatID == null) {
-                  firestoreService.addContact(textController.text, _selectedValue, numberController.text);
-                }
                 textController.clear();
                 numberController.clear();
-                Navigator.pop(context);
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if(textController.text.isNotEmpty && textController.text!=""){
+                  if (numberController.text.isNotEmpty && numberController.text!="" && (numberController.text.length==12 ||numberController.text.length==10)) {
+                    if (chatID == null) {
+                      firestoreService.addContact(
+                          textController.text, _selectedValue,
+                          numberController.text);
+                    }
+                    textController.clear();
+                    numberController.clear();
+                    Navigator.pop(context);
+                  }else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Error in phone number, make sure it is valid')),
+                    );
+                  }
+                }else{
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error in Contact Name.')),
+                  );
+                }
+
               },
               child: const Text("Add"),
             ),
+
           ],
         ),
       );
@@ -123,6 +147,14 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
             ],
           ),
           actions: [
+            ElevatedButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                textController.clear();
+                numberController.clear();
+                Navigator.of(context).pop();
+              },
+            ),
             ElevatedButton(
               onPressed: () {
                 firestoreService.updateChatNameAndPhoneNumber(chatID, textController.text,numberController.text);
@@ -228,7 +260,6 @@ class _HomepageState extends State<Homepage> with SingleTickerProviderStateMixin
                                 );
                               },
                               onLongPress: () => _showOptionsDialog(context,chatID,nameText),
-
                             ),
                           ),
                         );

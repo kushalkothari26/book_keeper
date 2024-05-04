@@ -19,8 +19,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     /*for push notifications*/
-    FirebaseMessaging PushNotificationService = FirebaseMessaging.instance;
-    PushNotificationService.getToken().then((token) {
+    FirebaseMessaging pushNotificationService = FirebaseMessaging.instance;
+    pushNotificationService.getToken().then((token) {
       print("FCM Token: $token");
     });
     return GetMaterialApp(
